@@ -5,8 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "pm2-runtime start ecosystem.config.js --env production ",
-    "dev": "node --require dotenv/config app.js"
+    "start": "node --require dotenv/config app.js"
   },
   "keywords": [
     "Trillant",
@@ -15,12 +14,12 @@
   "author": "PavelJS",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.358.0",
     "bcrypt": "^3.0.2",
     "body-parser": "^1.18.3",
     "busboy-body-parser": "^0.3.2",
     "cloudinary": "^1.13.2",
     "cors": "^2.8.5",
+    "cross-env": "^5.2.0",
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "express-rate-limit": "^3.3.2",

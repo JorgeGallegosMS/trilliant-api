@@ -1,12 +1,12 @@
-'use strict';
+const mongoose = require("mongoose");
 
-const mongoose = require('mongoose');
+const { MONGODB_URI } = require("../constants/db");
 
-module.exports = (url) => {
-	if(!url) {
-		url = process.env.MONGOLAB_CYAN_URI || dbConfig.db_url;
-	}
-	return mongoose.connect(url, {useNewUrlParser: true, useCreateIndex: true});
+module.exports = () => {
+  if (!MONGODB_URI) {
+    console.log("No database selected. Please, set MONGODB_URI env variable");
+    process.exit(-1);
+  }
+
+  return mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useCreateIndex: true });
 };
-
-
