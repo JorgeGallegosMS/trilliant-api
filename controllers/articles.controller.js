@@ -4,14 +4,29 @@ const ArticleModel = require("../models/article.model");
 const sendJson = require("../services/message.service");
 const errorHandler = require("../services/error-handler.service");
 
+const { API_LIST_REQUEST_DEFAULT_LIMIT } = require("../constants/api");
+
+const parseStartLimit = range => {
+  const rangeStripped = String(range).replace(/[\[\]]/g, "");
+  if (!rangeStripped) {
+    return [0, API_LIST_REQUEST_DEFAULT_LIMIT];
+  }
+
+  const [start, end] = rangeStripped.split(",");
+
+  const resultStart = parseInt(start, 10) || 0;
+
+  return [resultStart, parseInt(end, 10) ? parseInt(end, 10) - resultStart + 1 : API_LIST_REQUEST_DEFAULT_LIMIT];
+};
+
 module.exports = {
   getArticles: async (req, res) => {
     try {
-      const [match, start, end] = /\[(\d+),\s*(\d+)]/.exec(req.query.range);
+      const [start, limit] = parseStartLimit(req.query.range);
 
       const articles = await ArticleModel.find()
-        .skip(parseInt(start, 10))
-        .limit(parseInt(end, 10) + 1);
+        .skip(start)
+        .limit(limit);
       const articlesCount = await ArticleModel.countDocuments();
 
       res.setHeader("Content-Range", `articles 0-${articles.length}/${articlesCount}`);
