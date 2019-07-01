@@ -8,7 +8,7 @@ const {
   JWT_EXP_LOGIN,
   JWT_EXP_REFRESH,
   JWT_EXP_RESET_PSW
-} = require("../config/jwt");
+} = require("../constants/jwt");
 const CustomError = require("../libs/custom-error.lib");
 
 module.exports = event => {
