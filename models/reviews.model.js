@@ -22,19 +22,19 @@ const ReviewsSchema = mongoose.Schema(
     ],
     overall: {
       type: Number,
-      default: 5
+      default: 50
     },
     quality: {
       type: Number,
-      default: 5
+      default: 50
     },
     fit: {
       type: Number,
-      default: 5
+      default: 50
     },
     shipping: {
       type: Number,
-      default: 5
+      default: 50
     },
     looksGreatCount: {
       type: Number,
@@ -61,10 +61,6 @@ const ReviewsSchema = mongoose.Schema(
       type: Boolean,
       default: false
     },
-    pictureState: {
-      type: Number,
-      default: 1
-    }
   },
   {
     timestamps: true

@@ -5,6 +5,7 @@ const imageUploadMiddleware = require('../middlewares/imageUpload');
 const localTokenMiddleware = require('../middlewares/jwt-local.middleware').verifyToken;
 
 router.post('/upload-file', localTokenMiddleware, imageUploadMiddleware, reviewsCtrl.addTempReviewImage);
+router.delete('/upload-file', localTokenMiddleware, reviewsCtrl.removeTempReviewImage);
 router.post('/add', localTokenMiddleware, reviewsCtrl.addReview);
 router.put('/update/:id', localTokenMiddleware, reviewsCtrl.updateReview);
 router.patch('/rate/:id', reviewsCtrl.rateAndCommentReview);

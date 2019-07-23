@@ -69,6 +69,29 @@ module.exports.uploadToCloudinary = async (file, tag) => {
   });
 };
 
+module.exports.deleteTempImageById = async imageId => {
+  try {
+    
+    const image = await TempImageModel.findById(imageId);
+    console.log({imageId, image})
+    if (!image) {
+      throw new CustomError({
+        code: 404
+      });
+    }
+    try {
+      fs.unlinkSync(path.join(IMAGE_TEMP_DIR, image.filename));
+    } catch (e) {
+      console.error('Failed to remove temp image file', image.filename);
+    }
+    return await TempImageModel.deleteOne({ _id: imageId });
+  } catch (err) {
+    throw new CustomError({
+      message: err.message
+    });
+  }
+};
+
 module.exports.saveTempImageData = async data => {
   try {
     return await TempImageModel.create(data);

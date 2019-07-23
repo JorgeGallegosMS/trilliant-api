@@ -68,8 +68,9 @@ module.exports = {
 
   getReviewImage: async id => {
     try {
-      const review = await Reviews.findOne({ _id: id });
+      const review = await Reviews.findOne({ _id: id }).lean();
       const imageWithRates = {
+        comment: review.comment,
         imageUrls: review.imageUrls,
         overall: review.overall,
         fit: review.fit,
@@ -137,7 +138,8 @@ module.exports = {
             fit: data.fit,
             shipping: data.shipping,
             comment: data.comment,
-            shouldDisplay: true
+            shouldDisplay: true,
+            imageUrls: data.imageUrls,
           }
         }
       );

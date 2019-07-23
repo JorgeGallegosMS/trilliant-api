@@ -39,6 +39,22 @@ module.exports = {
     }
   },
 
+  removeTempReviewImage: async (req, res) => {
+    try {
+      const {
+        data: { _id: imageId }
+      } = req.body;
+
+      await imageService.deleteTempImageById(imageId);
+      return sendJson({
+        res,
+        msg: 'Image succesfully deleted'
+      });
+    } catch (err) {
+      errorHandler(err, req, res);
+    }
+  },
+
   addTempReviewImage: async (req, res) => {
     try {
       const { reviewTempId } = req.body;
@@ -129,7 +145,7 @@ module.exports = {
       const reviewId = req.params.id;
       const data = Object.assign({}, req.body);
       const ratedReview = await reviewsService.rateCommentReview(reviewId, data);
-      // await clothesService.updateRates(data);
+      await clothesService.updateRates(data);
       return sendJson({
         res,
         data: ratedReview,
