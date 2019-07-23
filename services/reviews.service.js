@@ -89,14 +89,14 @@ module.exports = {
 
   getReviewById: async id => {
     try {
-      const review = Reviews.findOne({ _id: id }).lean();
+      const review = await Reviews.findOne({ _id: id }).lean();
       if (!review) {
         throw new CustomError({
           message: 'No reviews by this id',
           code: 404
         });
       }
-      const user = await User.findOne({ _id: review.userId });
+      const user = await User.findOne({ _id: review.userId });    
 
       return {
         ...review,
@@ -139,7 +139,7 @@ module.exports = {
             shipping: data.shipping,
             comment: data.comment,
             shouldDisplay: true,
-            imageUrls: data.imageUrls,
+            imageUrls: data.imageUrls
           }
         }
       );
