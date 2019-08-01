@@ -38,7 +38,7 @@ module.exports = {
         code: 404
       });
     }
-    foundedUser.links = _.merge(foundedUser.links, links);
+    foundedUser.links = links;
     const savedUser = await foundedUser.save();
     return savedUser;
   },

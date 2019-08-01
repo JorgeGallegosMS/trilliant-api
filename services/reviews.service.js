@@ -163,7 +163,7 @@ module.exports = {
           })
           .reduce((prev, next) => {
             return +prev + +next;
-          }) / sum.length;
+          }, 0) / sum.length;
       const qualitySum =
         sum
           .map(item => {
@@ -171,7 +171,7 @@ module.exports = {
           })
           .reduce((prev, next) => {
             return +prev + +next;
-          }) / sum.length;
+          }, 0) / sum.length;
       const fitSum =
         sum
           .map(item => {
@@ -179,7 +179,7 @@ module.exports = {
           })
           .reduce((prev, next) => {
             return +prev + +next;
-          }) / sum.length;
+          }, 0) / sum.length;
       const shippingSum =
         sum
           .map(item => {
@@ -187,7 +187,7 @@ module.exports = {
           })
           .reduce((prev, next) => {
             return +prev + +next;
-          }) / sum.length;
+          }, 0) / sum.length;
       const rates = {
         averageOverall: overallSum,
         averageQuality: qualitySum,

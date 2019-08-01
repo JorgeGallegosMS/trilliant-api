@@ -7,7 +7,10 @@ const _ = require('lodash');
 module.exports = {
   getClothByUrl: async url => {
     try {
-      const cloth = await Clothes.findOne({ url: url });
+      const cloth = await Clothes.findOne({ url: url })
+        .populate('reviews')
+        .populate({ path: 'reviews', populate: { path: 'userId' } })
+        .lean();
       if (!cloth) {
         throw new CustomError({
           message: 'No clothes by this url',
@@ -52,6 +55,9 @@ module.exports = {
         fit: data.fit,
         shipping: data.shipping
       };
+
+      console.log({ data });
+
       const cloth = await Clothes.findOne({ url: data.url });
 
       cloth.avarageOverall = (cloth.avarageOverall + ratings.overall) / cloth.reviews.length || 0;
