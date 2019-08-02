@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-module.exports = (email, msg) => {
+module.exports = (email, msg, subject) => {
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -14,7 +14,7 @@ module.exports = (email, msg) => {
     const mailOptions = {
         from: process.env.EMAIL_ADMIN,
         to: email,
-        subject: 'Info!',
+        subject: subject || 'Trilliant',
         html: msg
     };
 

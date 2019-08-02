@@ -12,13 +12,9 @@ module.exports = {
         try {
             const url = req.body.url;
             const clothInfo = await clothesService.getClothByUrl(url);
-            const rates = await reviewsService.getRates(clothInfo.reviews);
             return sendJson({
                 res,
-                data: {
-                    clothInfo: clothInfo,
-                    rates: rates
-                },
+                data: clothInfo,
                 message: 'Cloth info'
             })
         } catch(err) {

@@ -6,9 +6,24 @@ const bodyValidationMiddleware = require('../middlewares/body-validation');
 const apiLimiter = require('../middlewares/rateLimiter');
 const localTokenMiddleware = require('../middlewares/jwt-local.middleware').verifyToken;
 
+router.patch(
+  '/add-social-links',
+  apiLimiter(),
+  localTokenMiddleware,
+  bodyValidationMiddleware.addSocialLinks(),
+  bodyValidationMiddleware.result,
+  userCtrl.addSocialLinks
+);
 
+router.patch('/delete-social-links', apiLimiter(), localTokenMiddleware, userCtrl.deleteSocialLinks);
 router.post('/create', apiLimiter(), bodyValidationMiddleware.psw(), bodyValidationMiddleware.result, userCtrl.create);
-router.post('/login', apiLimiter(), bodyValidationMiddleware.login(), bodyValidationMiddleware.result, userCtrl.authenticateUser);
+router.post(
+  '/login',
+  apiLimiter(),
+  bodyValidationMiddleware.login(),
+  bodyValidationMiddleware.result,
+  userCtrl.authenticateUser
+);
 
 router.get('/profile', localTokenMiddleware, userCtrl.userProfile);
 router.get('/profile/:id', userCtrl.getOtherUserProfile);

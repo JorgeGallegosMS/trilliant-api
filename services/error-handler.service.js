@@ -7,7 +7,6 @@ module.exports = (err, req, res, next) => {
 	}
 
 	switch(err.msg) {
-		
 		case 'not registered':
 		case 'invalid password':
 			res.status(401);
@@ -66,7 +65,7 @@ module.exports = (err, req, res, next) => {
 				res, 
 				msg: err.message, 
 				success: false, 
-				code: err.code, 
+				code: err.code || 500, 
 				customCode: err.customCode});
 			break;
 	}

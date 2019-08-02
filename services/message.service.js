@@ -14,5 +14,5 @@ module.exports = ({data, msg, res, code, customCode, success = true}) => {
 	result.success = success;
 	
 	// console.log('**response: ', result)
-	return res.json(result);
+	return res.status(result.code).json(result);
 };

@@ -65,7 +65,7 @@ module.exports = {
     try {
       const { text, title, subtitle } = req.body;
 
-      const imageUrl = req.result.secure_url;
+      const imageUrl = req.cloudinaryFileData.secure_url;
 
       const newArticle = new ArticleModel({
         text,
