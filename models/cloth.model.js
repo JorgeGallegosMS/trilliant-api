@@ -9,19 +9,19 @@ const ClothSchema = mongoose.Schema({
   reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Reviews' }],
   averageOverall: {
     type: Number,
-    default: 0
+    default: -1
   },
   averageQuality: {
     type: Number,
-    default: 0
+    default: -1
   },
   averageFit: {
     type: Number,
-    default: 0
+    default: -1
   },
   averageShipping: {
     type: Number,
-    default: 0
+    default: -1
   }
 });
 

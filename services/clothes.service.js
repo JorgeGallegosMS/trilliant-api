@@ -4,6 +4,18 @@ const Clothes = require('../models/cloth.model').ClothModel;
 const CustomError = require('../libs/custom-error.lib');
 const _ = require('lodash');
 
+const getNewRateValue = (avgValue, newValue, newCount) => {
+  if (newValue === -1) {
+    return avgValue;
+  }
+
+  if (avgValue === -1) {
+    return newValue;
+  }
+
+  return Math.round(avgValue + (newValue - avgValue) / (newCount));
+}
+
 module.exports = {
   getClothByUrl: async url => {
     try {
@@ -17,7 +29,10 @@ module.exports = {
           code: 404
         });
       }
-      return cloth;
+      return {
+        ...cloth,
+        reviews: cloth.reviews.filter(review => review.shouldDisplay),
+      };
     } catch (err) {
       throw new CustomError({
         message: err.message,
@@ -56,14 +71,14 @@ module.exports = {
         shipping: data.shipping
       };
 
-      console.log({ data });
+      const cloth = await Clothes.findOne({ url: data.url }).populate('reviews');
 
-      const cloth = await Clothes.findOne({ url: data.url });
+      const validReviewsCount = cloth.reviews.filter(review => review.shouldDisplay).length
 
-      cloth.avarageOverall = (cloth.avarageOverall + ratings.overall) / cloth.reviews.length || 0;
-      cloth.averageQuality = (cloth.averageQuality + ratings.quality) / cloth.reviews.length || 0;
-      cloth.averageFit = (cloth.averageFit + ratings.fit) / cloth.reviews.length || 0;
-      cloth.averageShipping = (cloth.averageShipping + ratings.shipping) / cloth.reviews.length || 0;
+      cloth.averageOverall = getNewRateValue(cloth.averageOverall, ratings.overall, validReviewsCount);
+      cloth.averageQuality = getNewRateValue(cloth.averageQuality, ratings.quality, validReviewsCount);
+      cloth.averageFit = getNewRateValue(cloth.averageFit, ratings.fit, validReviewsCount);
+      cloth.averageShipping = getNewRateValue(cloth.averageShipping, ratings.shipping, validReviewsCount);
       return cloth.save();
     } catch (err) {
       throw new CustomError({

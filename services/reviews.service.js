@@ -151,57 +151,7 @@ module.exports = {
         code: err.code
       });
     }
-  },
-
-  getRates: async reviewsList => {
-    try {
-      const sum = await Reviews.aggregate([{ $match: { _id: { $in: reviewsList }, shouldDisplay: true } }]);
-      const overallSum =
-        sum
-          .map(item => {
-            return item.overall;
-          })
-          .reduce((prev, next) => {
-            return +prev + +next;
-          }, 0) / sum.length;
-      const qualitySum =
-        sum
-          .map(item => {
-            return item.quality;
-          })
-          .reduce((prev, next) => {
-            return +prev + +next;
-          }, 0) / sum.length;
-      const fitSum =
-        sum
-          .map(item => {
-            return item.fit;
-          })
-          .reduce((prev, next) => {
-            return +prev + +next;
-          }, 0) / sum.length;
-      const shippingSum =
-        sum
-          .map(item => {
-            return item.shipping;
-          })
-          .reduce((prev, next) => {
-            return +prev + +next;
-          }, 0) / sum.length;
-      const rates = {
-        averageOverall: overallSum,
-        averageQuality: qualitySum,
-        averageFit: fitSum,
-        averageShipping: shippingSum
-      };
-      return rates;
-    } catch (err) {
-      throw new CustomError({
-        message: err.message,
-        code: err.code
-      });
-    }
-  },
+  }, 
 
   reviewsByUserId: async userId => {
     try {

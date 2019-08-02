@@ -10,7 +10,7 @@ const sendJson = require('../services/message.service');
 module.exports = {
     clothReviews: async(req, res) => {
         try {
-            const url = req.body.url;
+            const url = req.query.url;
             const clothInfo = await clothesService.getClothByUrl(url);
             return sendJson({
                 res,
