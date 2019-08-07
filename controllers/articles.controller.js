@@ -1,18 +1,18 @@
-const get = require("lodash/get");
+const get = require('lodash/get');
 
-const ArticleModel = require("../models/article.model");
-const sendJson = require("../services/message.service");
-const errorHandler = require("../services/error-handler.service");
+const ArticleModel = require('../models/article.model');
+const sendJson = require('../services/message.service');
+const errorHandler = require('../services/error-handler.service');
 
-const { API_LIST_REQUEST_DEFAULT_LIMIT } = require("../constants/api");
+const { API_LIST_REQUEST_DEFAULT_LIMIT } = require('../constants/api');
 
 const parseStartLimit = range => {
-  const rangeStripped = String(range).replace(/[\[\]]/g, "");
+  const rangeStripped = String(range).replace(/[\[\]]/g, '');
   if (!rangeStripped) {
     return [0, API_LIST_REQUEST_DEFAULT_LIMIT];
   }
 
-  const [start, end] = rangeStripped.split(",");
+  const [start, end] = rangeStripped.split(',');
 
   const resultStart = parseInt(start, 10) || 0;
 
@@ -29,8 +29,8 @@ module.exports = {
         .limit(limit);
       const articlesCount = await ArticleModel.countDocuments();
 
-      res.setHeader("Content-Range", `articles 0-${articles.length}/${articlesCount}`);
-      res.contentType("json");
+      res.setHeader('Content-Range', `articles 0-${articles.length}/${articlesCount}`);
+      res.contentType('json');
       res.json(articles);
     } catch (err) {
       errorHandler(err, req, res);
@@ -46,7 +46,7 @@ module.exports = {
         return sendJson({
           res,
           code: 404,
-          msg: "Article not found",
+          msg: 'Article not found',
           success: false
         });
       }
@@ -82,7 +82,7 @@ module.exports = {
           ...newArticle.toJSON(),
           id: newArticle._id
         },
-        msg: "Article created"
+        msg: 'Article created'
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -94,7 +94,7 @@ module.exports = {
       const articleId = req.params.id;
       const { text, title, subtitle } = req.body;
 
-      const imageUrl = get(req, "result.secure_url");
+      const imageUrl = get(req, 'result.secure_url');
 
       const updateData = {
         text,
@@ -114,7 +114,7 @@ module.exports = {
           ...updatedArticle.toJSON(),
           id: updatedArticle._id
         },
-        msg: "Article updated"
+        msg: 'Article updated'
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -130,7 +130,7 @@ module.exports = {
         return sendJson({
           res,
           code: 404,
-          msg: "Article not found",
+          msg: 'Article not found',
           success: false
         });
       }

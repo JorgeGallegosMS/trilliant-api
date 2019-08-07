@@ -22,9 +22,19 @@ const ClothSchema = mongoose.Schema({
   averageShipping: {
     type: Number,
     default: -1
-  }
+  },
+  price: {
+    type: Number,
+    default: 0,
+  },
+  store: {
+    type: String,
+  },
+  name: {
+    type: String,
+  },
 });
 
 const ClothModel = mongoose.model('Clothes', ClothSchema);
 
-module.exports = { ClothModel };
+module.exports = ClothModel;

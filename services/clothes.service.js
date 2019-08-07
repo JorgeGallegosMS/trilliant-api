@@ -1,6 +1,6 @@
 'use strict';
 
-const Clothes = require('../models/cloth.model').ClothModel;
+const Clothes = require('../models/cloth.model');
 const CustomError = require('../libs/custom-error.lib');
 const _ = require('lodash');
 

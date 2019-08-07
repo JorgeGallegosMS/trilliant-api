@@ -2,3 +2,5 @@ node_modules/
 .env
 public/
 upload/
+import/images
+import/*.csv

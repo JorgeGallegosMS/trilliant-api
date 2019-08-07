@@ -96,7 +96,7 @@ module.exports = {
           code: 404
         });
       }
-      const user = await User.findOne({ _id: review.userId });    
+      const user = await User.findOne({ _id: review.userId });
 
       return {
         ...review,
@@ -118,7 +118,7 @@ module.exports = {
         imageUrls: imageUrls.map(url => ({ url, rotate: 0 }))
       };
       const review = await Reviews.create(fields);
-      return review;
+      return review.toObject();
     } catch (err) {
       throw new CustomError({
         message: err.message,
@@ -129,6 +129,22 @@ module.exports = {
 
   rateCommentReview: async (reviewId, data) => {
     try {
+      if (
+        data.overall < -1 ||
+        data.overall > 100 ||
+        data.quality < -1 ||
+        data.quality > 100 ||
+        data.fit < -1 ||
+        data.fit > 100 ||
+        data.shipping < -1 ||
+        data.shipping > 100
+      ) {
+        throw new CustomError({
+          message: 'Rating must be an integer more or equal to -1 and less or equal to 100',
+          code: 400
+        });
+      }
+
       const reviewToUpdate = await Reviews.findOneAndUpdate(
         { _id: reviewId },
         {
@@ -151,7 +167,7 @@ module.exports = {
         code: err.code
       });
     }
-  }, 
+  },
 
   reviewsByUserId: async userId => {
     try {
@@ -176,7 +192,7 @@ module.exports = {
             code: 409
           });
         }
-        const review = await Reviews.findOneAndUpdate({ _id: id }, { $addToSet: { helpful: userId } }, { new: true });
+        const review = await Reviews.findOneAndUpdate({ _id: id }, { $addToSet: { helpful: userId } });
         review.helpfulCount += 1;
         await review.save();
         return review.helpful.length;
@@ -212,7 +228,6 @@ module.exports = {
         const review = await Reviews.findOneAndUpdate(
           { _id: id },
           { $addToSet: { looksGreat: userId } },
-          { new: true }
         );
         console.log(review.looksGreatCount, 'BEFORE UPDATE');
         review.looksGreatCount += 1;

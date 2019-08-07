@@ -5,7 +5,7 @@ const clothesController = require('../controllers/clothes.controller');
 const bodyValidationMiddleware = require('../middlewares/body-validation');
 
 router.get('/url', clothesController.clothReviews);
-
 router.get('/ratings/:id', bodyValidationMiddleware.rating(), bodyValidationMiddleware.result, clothesController.getClothRatings);
+router.get('/', clothesController.getCloths);
 
 module.exports = router;

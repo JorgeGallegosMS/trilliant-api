@@ -247,7 +247,7 @@ module.exports = {
 
   updateTokenTime: async (id, newTime) => {
     try {
-      const user = await User.findOneAndUpdate({ _id: id }, { $set: { tokenExpires: newTime } }, { new: true });
+      await User.findOneAndUpdate({ _id: id }, { $set: { tokenExpires: newTime } });
       return;
     } catch (err) {
       throw new CustomError({

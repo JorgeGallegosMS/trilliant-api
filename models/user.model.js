@@ -8,14 +8,14 @@ function createUserSchema(fieldsToAdd) {
     firstName: {
       type: String,
       required: true,
-      minlength: 4,
-      maxlength: 8
+      minlength: 1,
+      maxlength: 200
     },
     lastName: {
       type: String,
       required: true,
-      minlength: 4,
-      maxlength: 8
+      minlength: 1,
+      maxlength: 200
     },
     email: {
       type: String,
