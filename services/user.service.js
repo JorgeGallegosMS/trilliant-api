@@ -159,51 +159,9 @@ module.exports = {
     }
   },
 
-  updateHelpfulCount: async (action, id) => {
-    try {
-      const user = await User.findOne({ _id: id });
-      if (action === 'remove') {
-        user.helpfulCount -= 1;
-        await user.save();
-        return user.helpfulCount;
-      } else if (action === 'add') {
-        console.log('#increase count#');
-        user.helpfulCount += 1;
-        await user.save();
-        return user.helpfulCount;
-      }
-    } catch (err) {
-      throw new CustomError({
-        message: err.message,
-        code: err.code
-      });
-    }
-  },
-
-  updateLooksGreatCount: async (action, id) => {
-    try {
-      const user = await User.findOne({ _id: id });
-      if (action === 'remove') {
-        user.looksGreatCount -= 1;
-        await user.save();
-        return user.looksGreatCount;
-      } else if (action === 'add') {
-        console.log('#increase count#');
-        user.looksGreatCount += 1;
-        await user.save();
-        return user.looksGreatCount;
-      }
-    } catch (err) {
-      throw new CustomError({
-        message: err.message,
-        code: err.code
-      });
-    }
-  },
-
   removeDeletedReviewStatsFromUserModel: async (userId, deletedReviewStats) => {
     try {
-      const userWithRemovedStats = await User.findByIdAndUpdate(userId, {
+      await User.findByIdAndUpdate(userId, {
         $inc: { looksGreatCount: -deletedReviewStats.looksGreatCount, helpfulCount: -deletedReviewStats.helpfulCount }
       });
       return;

@@ -28,14 +28,8 @@ router.post(
 router.get('/profile', localTokenMiddleware, userCtrl.userProfile);
 router.get('/profile/:id', userCtrl.getOtherUserProfile);
 
-router.post('/helpfulCount/:id', localTokenMiddleware, userCtrl.helpfulCountUpdate);
-router.post('/looksgreatCount/:id', localTokenMiddleware, userCtrl.looksGreatCountUpdate);
-//-------------------------------------------------
-
 router.post('/forgotPsw', bodyValidationMiddleware.email(), bodyValidationMiddleware.result, userCtrl.forgotPsw);
-
 router.get('/resetPsw', bodyValidationMiddleware.token(), bodyValidationMiddleware.result, userCtrl.linkToReset);
-
 router.post('/resetPsw', bodyValidationMiddleware.resetPsw(), bodyValidationMiddleware.result, userCtrl.resetPsw);
 
 router.get('/name', userCtrl.byUsername);

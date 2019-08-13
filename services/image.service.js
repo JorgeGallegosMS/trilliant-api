@@ -71,9 +71,7 @@ module.exports.uploadToCloudinary = async (file, tag) => {
 
 module.exports.deleteTempImageById = async imageId => {
   try {
-    
     const image = await TempImageModel.findById(imageId);
-    console.log({imageId, image})
     if (!image) {
       throw new CustomError({
         code: 404

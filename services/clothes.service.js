@@ -88,12 +88,12 @@ module.exports = {
     }
   },
 
-  deleteReviewFromCloth: async reviewId => {
+  deleteReviewFromCloth: async (reviewId, deletedReviewStats) => {
     try {
-      let cloth = await Clothes.findOne({ reviews: reviewId });
-      console.log(cloth.reviews, 'BEFORE');
-      cloth.reviews = cloth.reviews.filter(item => item.toString() !== reviewId.toString());
-      console.log(cloth.reviews, 'REMOVED');
+      let cloth = await Clothes.findOne({ reviews: reviewId });      
+      cloth.reviews = cloth.reviews.filter(item => item.toString() !== reviewId.toString());      
+      cloth.looksGreatCount -= deletedReviewStats.looksGreatCount;
+      cloth.helpfulCount -= deletedReviewStats.helpfulCount;
       await cloth.save();
     } catch (err) {
       throw new CustomError({

@@ -89,19 +89,17 @@ module.exports = {
 
   getReviewById: async id => {
     try {
-      const review = await Reviews.findOne({ _id: id }).lean();
+      const review = await Reviews.findOne({ _id: id })
+        .populate('userId')
+        .lean();
       if (!review) {
         throw new CustomError({
           message: 'No reviews by this id',
           code: 404
         });
       }
-      const user = await User.findOne({ _id: review.userId });
 
-      return {
-        ...review,
-        links: user.links
-      };
+      return review;
     } catch (err) {
       throw new CustomError({
         message: err.message,
@@ -112,12 +110,13 @@ module.exports = {
 
   addReview: async (id, url, imageUrls) => {
     try {
-      const fields = {
+      const review = new Reviews({
         userId: id,
         url: url,
         imageUrls: imageUrls.map(url => ({ url, rotate: 0 }))
-      };
-      const review = await Reviews.create(fields);
+      });
+
+      await review.save();
       return review.toObject();
     } catch (err) {
       throw new CustomError({
@@ -181,123 +180,6 @@ module.exports = {
     }
   },
 
-  updateHelpfulValue: async (action, userId, id) => {
-    try {
-      if (action === 'add') {
-        const beforeUpdateReview = await Reviews.findById(id);
-        let index = beforeUpdateReview.helpful.includes(userId);
-        if (index) {
-          throw new CustomError({
-            message: 'This user have already like this review',
-            code: 409
-          });
-        }
-        const review = await Reviews.findOneAndUpdate({ _id: id }, { $addToSet: { helpful: userId } });
-        review.helpfulCount += 1;
-        await review.save();
-        return review.helpful.length;
-      } else if (action === 'remove') {
-        const review = await Reviews.findOne({ _id: id });
-        let index = review.helpful.findIndex(item => item === userId);
-        if (index > -1) {
-          review.helpful.splice(index, 1);
-        }
-        review.helpfulCount -= 1;
-        await review.save();
-        return review.helpful.length;
-      }
-    } catch (err) {
-      throw new CustomError({
-        message: err.message,
-        code: err.code
-      });
-    }
-  },
-
-  updateLooksGreatValue: async (action, userId, id) => {
-    try {
-      if (action === 'add') {
-        const beforeUpdateReview = await Reviews.findById(id);
-        let index = beforeUpdateReview.looksGreat.includes(userId);
-        if (index) {
-          throw new CustomError({
-            message: 'This user have already like this review',
-            code: 409
-          });
-        }
-        const review = await Reviews.findOneAndUpdate(
-          { _id: id },
-          { $addToSet: { looksGreat: userId } },
-        );
-        console.log(review.looksGreatCount, 'BEFORE UPDATE');
-        review.looksGreatCount += 1;
-        console.log(review.looksGreatCount, 'AFTER UPDATE');
-        await review.save();
-        return review.looksGreat.length;
-      } else if (action === 'remove') {
-        const review = await Reviews.findOne({ _id: id });
-        let index = review.looksGreat.findIndex(item => item === userId);
-        if (index > -1) {
-          review.looksGreat.splice(index, 1);
-        }
-        review.looksGreatCount -= 1;
-        await review.save();
-        return review.looksGreat.length;
-      }
-    } catch (err) {
-      throw new CustomError({
-        message: err.message,
-        code: err.code
-      });
-    }
-  },
-
-  updateHelpfulCount: async (action, id) => {
-    try {
-      const review = await Reviews.findOne({ _id: id });
-      if (action === 'remove') {
-        review.helpfulCount -= 1;
-        await review.save();
-        return review.helpfulCount;
-      } else if (action === 'add') {
-        console.log('#increase count#');
-        console.log('########################');
-        review.helpfulCount += 1;
-        await review.save();
-        return review.helpfulCount;
-      }
-    } catch (err) {
-      throw new CustomError({
-        message: err.message,
-        code: err.code
-      });
-    }
-  },
-
-  updateLooksGreatCount: async (action, id) => {
-    try {
-      const review = await Reviews.findOne({ _id: id });
-      if (action === 'remove') {
-        review.looksGreatCount -= 1;
-        await review.save();
-        return review.looksGreatCount;
-      } else if (action === 'add') {
-        console.log('#increase count#');
-        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@');
-        console.log(review.looksGreatCount, 'BEFORE INCREASE');
-        review.looksGreatCount += 1;
-        console.log(review.looksGreatCount, 'AFTER INCREASING');
-        await review.save();
-        return review.looksGreatCount;
-      }
-    } catch (err) {
-      throw new CustomError({
-        message: err.message,
-        code: err.code
-      });
-    }
-  },
-
   deleteReview: async (reviewId, userId) => {
     try {
       const review = await Reviews.findById(reviewId);
@@ -308,7 +190,6 @@ module.exports = {
         });
       }
       const deleted = await review.remove();
-      console.log(deleted, 'DELETED REVIEW');
       const reviewStats = { looksGreatCount: deleted.looksGreatCount, helpfulCount: deleted.helpfulCount };
       return reviewStats;
     } catch (err) {

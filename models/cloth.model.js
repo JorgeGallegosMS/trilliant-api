@@ -23,6 +23,14 @@ const ClothSchema = mongoose.Schema({
     type: Number,
     default: -1
   },
+  helpfulCount: {
+    type: Number,
+    default: 0
+  },
+  looksGreatCount: {
+    type: Number,
+    default: 0
+  },
   price: {
     type: Number,
     default: 0,

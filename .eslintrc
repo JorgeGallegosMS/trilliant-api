@@ -6,7 +6,8 @@
     "no-console": "warn",
     "no-undef": "off",
     "no-unused-vars": "off",
-    "import/no-unresolved": "off"
+    "import/no-unresolved": "off",
+    "import/prefer-default-export": "off"
   },
   "extends": ["airbnb", "eslint:recommended"]
 }

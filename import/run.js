@@ -171,7 +171,8 @@ const uploadReview = async (review, reviewImages) => {
         fit: review.fitRating !== 'n/a' ? Math.round(review.fitRating * 20) : -1,
         shipping: review.shippingRating !== 'n/a' ? Math.round(review.shippingRating * 20) : -1,
         comment: review.comment,
-        url: review.itemURL
+        url: review.itemURL,
+        imageUrls: savedReview.imageUrls,
       }
     },
     {
@@ -197,7 +198,7 @@ const uploadReview = async (review, reviewImages) => {
       createdAt: (moment(review.reviewDate, 'M/DD/YYYY') || new Date()).toDate()
     }
   );
-  
+
   console.log('Created review with id', savedReview._id, 'for cloth', cloth._id);
 
   return;

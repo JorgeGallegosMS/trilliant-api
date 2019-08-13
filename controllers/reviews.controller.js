@@ -6,6 +6,7 @@ const errorHandler = require('../services/error-handler.service');
 const sendJson = require('../services/message.service');
 const userService = require('../services/user.service');
 const imageService = require('../services/image.service');
+const ratesService = require('../services/rates.service');
 
 module.exports = {
   showUserReviews: async (req, res) => {
@@ -80,7 +81,7 @@ module.exports = {
       const { reviewTempId } = req.body;
       const url = req.headers['url'];
 
-      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);
+      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);      
       const uploaded = await reviewsService.addReview(userId, url, reviewImageURLs);
       await clothesService.updateCloth(uploaded._id, url);
       return sendJson({
@@ -166,15 +167,14 @@ module.exports = {
 
   helpfulUpdate: async (req, res) => {
     try {
-      const reviewId = req.params.id;
-      // const userId = req.body.userId;
+      const reviewId = req.params.id;      
       const userId = req.decodedToken._id;
       const action = req.body.helpful;
 
-      const helpfulCount = await reviewsService.updateHelpfulValue(action, userId, reviewId);
+      const helpfulCount = await ratesService.updateRate(action, 'helpful', userId, reviewId);
       return sendJson({
         res,
-        data: { helpfulCount: helpfulCount },
+        data: { helpfulCount },
         msg: 'Helpful value updated!'
       });
     } catch (err) {
@@ -184,61 +184,27 @@ module.exports = {
 
   looksGreatUpdate: async (req, res) => {
     try {
-      const reviewId = req.params.id;
-      // const userId = req.body.userId;
+      const reviewId = req.params.id;      
       const userId = req.decodedToken._id;
       const action = req.body.looksGreat;
 
-      const looksGreatCount = await reviewsService.updateLooksGreatValue(action, userId, reviewId);
-      console.log(looksGreatCount, 'ANSEWER');
+      const looksGreatCount = await ratesService.updateRate(action, 'looksGreat', userId, reviewId);
       return sendJson({
         res,
-        data: { looksGreatCount: looksGreatCount },
+        data: { looksGreatCount },
         msg: 'Looks great value updated!'
       });
     } catch (err) {
       errorHandler(err, req, res);
     }
-  },
-
-  helpfulCountUpdate: async (req, res) => {
-    try {
-      const userId = req.params.id;
-      const action = req.body.helpful;
-
-      const helpfulCount = await reviewsService.updateHelpfulCount(action, userId);
-      return sendJson({
-        res,
-        data: helpfulCount,
-        msg: 'Helpful value updated!'
-      });
-    } catch (err) {
-      errorHandler(err, req, res);
-    }
-  },
-
-  looksGreatCountUpdate: async (req, res) => {
-    try {
-      const userId = req.params.id;
-      const action = req.body.looksGreat;
-
-      const looksGreatCount = await reviewsService.updateLooksGreatCount(action, userId);
-      return sendJson({
-        res,
-        data: looksGreatCount,
-        msg: 'Looks great value updated!'
-      });
-    } catch (err) {
-      errorHandler(err, req, res);
-    }
-  },
+  }, 
 
   deleteReview: async (req, res) => {
     try {
       const reviewId = req.params.id;
       const userId = req.decodedToken._id;
       const deletedReviewStats = await reviewsService.deleteReview(reviewId, userId);
-      await clothesService.deleteReviewFromCloth(reviewId);
+      await clothesService.deleteReviewFromCloth(reviewId, deletedReviewStats);
       await userService.removeDeletedReviewStatsFromUserModel(userId, deletedReviewStats);
       return sendJson({
         res,

@@ -15,9 +15,6 @@ router.get('/review/:id', reviewsCtrl.getParticularReview);
 router.put('/review/:id', reviewsCtrl.rateAndCommentReview);
 router.get('/all', reviewsCtrl.allReviews);
 
-router.post('/helpfulCount/:id', localTokenMiddleware, reviewsCtrl.helpfulCountUpdate);
-router.post('/looksgreatCount/:id', localTokenMiddleware, reviewsCtrl.looksGreatCountUpdate);
-
 router.delete('/delete/:id', localTokenMiddleware, reviewsCtrl.deleteReview);
 
 router.post('/helpful/:id', localTokenMiddleware, reviewsCtrl.helpfulUpdate);
