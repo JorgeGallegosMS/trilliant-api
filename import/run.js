@@ -24,7 +24,7 @@ const parseSocialMediaData = (type, data) => {
   if (!data[`user${type}Handle`] || !data[`user${type}Link`]) {
     return {};
   }
-  if (data[`user${type}Handle`] === 'n/a' || data[`user${type}Link`] === 'n/a') {
+  if (data[`user${type}Handle`] === 'none' || data[`user${type}Link`] === 'none') {
     return {};
   }
 
@@ -88,8 +88,8 @@ const uploadReview = async (review, reviewImages) => {
     .filter(imageData => fs.existsSync(path.join(__dirname, 'images', imageData.imageName)))
     .filter(imageData => imageData.imageName.split('.').pop());
 
-  if (!currentReviewImages.length || currentReviewImages.length > 5) {
-    congole.warning('Too many images for review with imageCode. Max 5 images allowed', review.imageCode);
+  if (!currentReviewImages.length) {
+    console.error('Too many images for review with imageCode. Max 5 images allowed', review.imageCode);
     return;
   }
 
@@ -166,10 +166,10 @@ const uploadReview = async (review, reviewImages) => {
         id: savedReview._id
       },
       body: {
-        overall: review.overallRating !== 'n/a' ? Math.round(review.overallRating * 20) : -1,
-        quality: review.qualityRating !== 'n/a' ? Math.round(review.qualityRating * 20) : -1,
-        fit: review.fitRating !== 'n/a' ? Math.round(review.fitRating * 20) : -1,
-        shipping: review.shippingRating !== 'n/a' ? Math.round(review.shippingRating * 20) : -1,
+        overall: review.overallRating !== 'no rating' ? Math.round(review.overallRating * 20) : -1,
+        quality: review.qualityRating !== 'no rating' ? Math.round(review.qualityRating * 20) : -1,
+        fit: review.fitRating !== 'no rating' ? Math.round(review.fitRating * 20) : -1,
+        shipping: review.shippingRating !== 'no rating' ? Math.round(review.shippingRating * 20) : -1,
         comment: review.comment,
         url: review.itemURL,
         imageUrls: savedReview.imageUrls,
@@ -187,7 +187,7 @@ const uploadReview = async (review, reviewImages) => {
   );
 
   if (rateReviewErr) {
-    console.warning(rateReviewErr);
+    console.error(rateReviewErr);
   }
 
   await ReviewsModel.findOneAndUpdate(

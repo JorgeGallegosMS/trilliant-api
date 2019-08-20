@@ -63,7 +63,7 @@ module.exports = (err, req, res, next) => {
 			if(err.http_code) err.code = err.http_code
 			sendJson({
 				res, 
-				msg: err.message, 
+				msg: err.msg || err.message, 
 				success: false, 
 				code: err.code || 500, 
 				customCode: err.customCode});

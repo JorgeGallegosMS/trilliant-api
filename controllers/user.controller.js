@@ -6,15 +6,17 @@ const nanoid = require('nanoid');
 const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
+
 const userService = require('../services/user.service');
 const errorHandler = require('../services/error-handler.service');
 const sendJson = require('../services/message.service');
 const jwtService = require('../services/jwt.service');
 const reviewsService = require('../services/reviews.service');
+const imageService = require('../services/image.service');
 const { createHash } = require('../services/password.service');
-
 const mailSender = require('../services/mail.service');
 
+const MobileCodesModel = require('../models/mobilecodes.model');
 
 const welcomeHTML = fs.readFileSync(path.join(__dirname, '../templates/welcome_email.html'));
 
@@ -223,8 +225,6 @@ module.exports = {
       const id = req.params.id;
       const userReviews = await reviewsService.reviewsByUserId(id);
       const user = await userService.getUserById(id);
-      console.log(user, 'USER');
-      console.log(userReviews, 'USER REVIEWS');
       return sendJson({
         res,
         data: {
@@ -261,6 +261,53 @@ module.exports = {
         data: {
           user
         }
+      });
+    } catch (err) {
+      errorHandler(err, req, res);
+    }
+  },
+
+  generateUploadCode: async (req, res) => {
+    try {
+      const userId = req.decodedToken._id;
+      const { url, reviewTempId } = req.body;
+
+      const unusedCode = await MobileCodesModel.findOne({
+        isUsed: false,
+        userId,
+        url
+      });
+
+      if (unusedCode) {
+        unusedCode.reviewTempId = reviewTempId;
+        await unusedCode.save();
+
+        return sendJson({
+          res,
+          data: unusedCode
+        });
+      }
+
+      const code = await MobileCodesModel.generateCode(userId, url, reviewTempId);
+      return sendJson({
+        res,
+        data: code
+      });
+    } catch (err) {
+      errorHandler(err, req, res);
+    }
+  },
+
+  verifytUploadCode: async (req, res) => {
+    try {
+      const code = req.params.code;
+
+      const existingCode = await MobileCodesModel.verifyAndGetCode(code);
+      await imageService.deleteTempImagesByReviewTempId(existingCode.reviewTempId);
+
+      return sendJson({
+        res,
+        data: existingCode
       });
     } catch (err) {
       errorHandler(err, req, res);

@@ -4,12 +4,17 @@ const mongoose = require('mongoose');
 
 const ReviewsSchema = mongoose.Schema(
   {
+    reviewTempId: {
+      type: String,
+      required: true
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
     url: {
-      type: String
+      type: String,
+      required: true,
     },
     imageUrls: [
       mongoose.Schema(

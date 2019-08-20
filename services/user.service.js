@@ -213,5 +213,5 @@ module.exports = {
         code: err.code
       });
     }
-  }
+  },  
 };

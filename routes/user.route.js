@@ -28,6 +28,9 @@ router.post(
 router.get('/profile', localTokenMiddleware, userCtrl.userProfile);
 router.get('/profile/:id', userCtrl.getOtherUserProfile);
 
+router.post('/generateUploadCode', localTokenMiddleware, userCtrl.generateUploadCode);
+router.post('/verifyCode/:code', userCtrl.verifytUploadCode);
+
 router.post('/forgotPsw', bodyValidationMiddleware.email(), bodyValidationMiddleware.result, userCtrl.forgotPsw);
 router.get('/resetPsw', bodyValidationMiddleware.token(), bodyValidationMiddleware.result, userCtrl.linkToReset);
 router.post('/resetPsw', bodyValidationMiddleware.resetPsw(), bodyValidationMiddleware.result, userCtrl.resetPsw);

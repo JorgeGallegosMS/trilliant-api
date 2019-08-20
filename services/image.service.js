@@ -41,6 +41,8 @@ module.exports.uploadReviewImagesToCloudinary = async reviewTempId => {
     }
   });
 
+  await TempImageModel.deleteMany({ reviewTempId });
+
   return imagesUploadData.map(imageUploadData => imageUploadData.secure_url);
 };
 
@@ -88,6 +90,20 @@ module.exports.deleteTempImageById = async imageId => {
       message: err.message
     });
   }
+};
+
+module.exports.deleteTempImagesByReviewTempId = async reviewTempId => {
+  const images = await TempImageModel.find({ reviewTempId }).lean();    
+
+  images.map(image => {
+    try {
+      fs.unlinkSync(path.join(IMAGE_TEMP_DIR, image.filename));
+    } catch (e) {
+      console.error('Failed to remove temp image file', image.filename);
+    }
+  });
+
+  return TempImageModel.deleteMany({ reviewTempId });
 };
 
 module.exports.saveTempImageData = async data => {

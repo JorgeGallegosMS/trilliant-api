@@ -19,6 +19,19 @@ module.exports = {
     ];
   },
 
+  addReview: [
+    body('url')
+      .exists()
+      .not()
+      .isEmpty()
+      .isURL(),
+    body('reviewTempId')
+      .exists()
+      .not()
+      .isEmpty()
+      .isString()
+  ],
+
   psw: () => {
     return [
       body('password')

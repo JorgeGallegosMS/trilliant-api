@@ -8,6 +8,9 @@ const userService = require('../services/user.service');
 const imageService = require('../services/image.service');
 const ratesService = require('../services/rates.service');
 
+const MobileCodesModel = require('../models/mobilecodes.model');
+const { ReviewsModel } = require('../models/reviews.model');
+
 module.exports = {
   showUserReviews: async (req, res) => {
     try {
@@ -78,11 +81,51 @@ module.exports = {
   addReview: async (req, res) => {
     try {
       const userId = req.decodedToken._id;
-      const { reviewTempId } = req.body;
-      const url = req.headers['url'];
+      const { reviewTempId, url } = req.body;
 
       const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);      
-      const uploaded = await reviewsService.addReview(userId, url, reviewImageURLs);
+      const uploaded = await reviewsService.addReview(reviewTempId, userId, url, reviewImageURLs);
+      await clothesService.updateCloth(uploaded._id, url);
+      return sendJson({
+        res,
+        data: uploaded,
+        msg: 'Image succesfully uploaded'
+      });
+    } catch (err) {
+      errorHandler(err, req, res);
+    }
+  },
+
+  addReviewMobile: async (req, res) => {
+    try {      
+      const { code, reviewTempId, url } = req.body;
+
+      const mobileCodeData = await MobileCodesModel.findOne({
+        reviewTempId,
+        url,
+        code,
+      })
+
+      if (!mobileCodeData) {
+        throw new CustomError({
+          message: 'Upload code not found',
+          code: 404
+        });
+      }
+
+      const existingReview = await ReviewsModel.findOne({
+        reviewTempId,
+      })
+
+      if (existingReview) {
+        throw new CustomError({
+          message: 'Review already exists',
+          code: 400
+        });
+      }
+
+      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);      
+      const uploaded = await reviewsService.addReview(reviewTempId, mobileCodeData.userId, url, reviewImageURLs);
       await clothesService.updateCloth(uploaded._id, url);
       return sendJson({
         res,
@@ -131,6 +174,20 @@ module.exports = {
     try {
       const id = req.params.id;
       const review = await reviewsService.getReviewById(id);
+      return sendJson({
+        res,
+        data: review,
+        msg: 'All review Info'
+      });
+    } catch (err) {
+      errorHandler(err, req, res);
+    }
+  },
+
+  getReviewByTempId: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const review = await reviewsService.getReviewByTempId(id);
       return sendJson({
         res,
         data: review,

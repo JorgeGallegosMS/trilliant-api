@@ -3,7 +3,7 @@ const fs = require('fs');
 
 module.exports = {
   IMAGE_TEMP_DIR: path.join(__dirname, '../upload'),
-  REVIEW_IMAGE_LIMIT: 5,
+  REVIEW_IMAGE_LIMIT: 10,
 };
 
 if (!fs.existsSync(module.exports.IMAGE_TEMP_DIR)) {

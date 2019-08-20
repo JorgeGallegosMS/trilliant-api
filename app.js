@@ -10,6 +10,7 @@ const errorHandler = require('./services/error-handler.service');
 const apiRouter = require('./routes/api.route');
 
 const tempImageWorker = require('./workers/tempimage');
+const mobileUploadWorker = require('./workers/mobileupload');
 
 const app = express();
 
@@ -65,6 +66,7 @@ db()
     });
 
     tempImageWorker.start();
+    mobileUploadWorker.start();
   })
   .catch(err => {
     throw new Error(`Err connecting to the db ${err}`);

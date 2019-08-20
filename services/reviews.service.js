@@ -106,14 +106,34 @@ module.exports = {
         code: err.code
       });
     }
-  },
+  }, 
 
-  addReview: async (id, url, imageUrls) => {
+  getReviewByTempId: async id => {
+    try {
+      const review = await Reviews.findOne({ reviewTempId: id }).lean();
+      if (!review) {
+        throw new CustomError({
+          message: 'No reviews by this id',
+          code: 404
+        });
+      }
+
+      return review;
+    } catch (err) {
+      throw new CustomError({
+        message: err.message,
+        code: err.code
+      });
+    }
+  }, 
+
+  addReview: async (reviewTempId, id, url, imageUrls) => {
     try {
       const review = new Reviews({
         userId: id,
         url: url,
-        imageUrls: imageUrls.map(url => ({ url, rotate: 0 }))
+        imageUrls: imageUrls.map(url => ({ url, rotate: 0 })),
+        reviewTempId,
       });
 
       await review.save();

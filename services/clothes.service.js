@@ -16,6 +16,18 @@ const getNewRateValue = (avgValue, newValue, newCount) => {
   return Math.round(avgValue + (newValue - avgValue) / (newCount));
 }
 
+const getOldRateValue = (avgValue, deleteValue, currentCount) => {
+  if (deleteValue === -1) {
+    return avgValue;
+  }
+
+  if (avgValue === -1) {
+    return avgValue;
+  }
+
+  return Math.round((avgValue * currentCount - deleteValue) / (currentCount - 1))
+}
+
 module.exports = {
   getClothByUrl: async url => {
     try {
@@ -90,10 +102,17 @@ module.exports = {
 
   deleteReviewFromCloth: async (reviewId, deletedReviewStats) => {
     try {
-      let cloth = await Clothes.findOne({ reviews: reviewId });      
+      const cloth = await Clothes.findOne({ reviews: reviewId });      
+      const validReviewsCount = cloth.reviews.filter(review => review.shouldDisplay).length
       cloth.reviews = cloth.reviews.filter(item => item.toString() !== reviewId.toString());      
       cloth.looksGreatCount -= deletedReviewStats.looksGreatCount;
-      cloth.helpfulCount -= deletedReviewStats.helpfulCount;
+      cloth.helpfulCount -= deletedReviewStats.helpfulCount;      
+
+      cloth.averageOverall = getOldRateValue(cloth.averageOverall, deletedReviewStats.overall, validReviewsCount);
+      cloth.averageQuality = getOldRateValue(cloth.averageQuality, deletedReviewStats.quality, validReviewsCount);
+      cloth.averageFit = getOldRateValue(cloth.averageFit, deletedReviewStats.fit, validReviewsCount);
+      cloth.averageShipping = getOldRateValue(cloth.averageShipping, deletedReviewStats.shipping, validReviewsCount);
+      
       await cloth.save();
     } catch (err) {
       throw new CustomError({
