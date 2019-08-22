@@ -260,9 +260,11 @@ module.exports = {
     try {
       const reviewId = req.params.id;
       const userId = req.decodedToken._id;
-      const deletedReviewStats = await reviewsService.deleteReview(reviewId, userId);
-      await clothesService.deleteReviewFromCloth(reviewId, deletedReviewStats);
-      await userService.removeDeletedReviewStatsFromUserModel(userId, deletedReviewStats);
+
+      const reviewToDelete = await reviewsService.getReviewById(reviewId);      
+      await clothesService.deleteReviewFromCloth(reviewId, reviewToDelete);
+      await userService.removeDeletedReviewStatsFromUserModel(userId, reviewToDelete);
+      await reviewsService.deleteReview(reviewId, userId);
       return sendJson({
         res,
         msg: 'Review deleted'

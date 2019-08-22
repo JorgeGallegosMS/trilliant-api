@@ -210,8 +210,7 @@ module.exports = {
         });
       }
       const deleted = await review.remove();
-      const reviewStats = { looksGreatCount: deleted.looksGreatCount, helpfulCount: deleted.helpfulCount };
-      return reviewStats;
+      return deleted;
     } catch (err) {
       throw new CustomError({
         message: err.message,

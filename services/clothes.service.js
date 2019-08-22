@@ -1,8 +1,8 @@
 'use strict';
 
+const _ = require('lodash');
 const Clothes = require('../models/cloth.model');
 const CustomError = require('../libs/custom-error.lib');
-const _ = require('lodash');
 
 const getNewRateValue = (avgValue, newValue, newCount) => {
   if (newValue === -1) {
@@ -13,8 +13,8 @@ const getNewRateValue = (avgValue, newValue, newCount) => {
     return newValue;
   }
 
-  return Math.round(avgValue + (newValue - avgValue) / (newCount));
-}
+  return Math.round(avgValue + (newValue - avgValue) / newCount);
+};
 
 const getOldRateValue = (avgValue, deleteValue, currentCount) => {
   if (deleteValue === -1) {
@@ -25,8 +25,12 @@ const getOldRateValue = (avgValue, deleteValue, currentCount) => {
     return avgValue;
   }
 
-  return Math.round((avgValue * currentCount - deleteValue) / (currentCount - 1))
-}
+  if (currentCount === 1) {
+    return -1;
+  }
+
+  return Math.round((avgValue * currentCount - deleteValue) / (currentCount - 1));
+};
 
 module.exports = {
   getClothByUrl: async url => {
@@ -38,12 +42,12 @@ module.exports = {
       if (!cloth) {
         throw new CustomError({
           message: 'No clothes by this url',
-          code: 404
+          code: 200
         });
       }
       return {
         ...cloth,
-        reviews: cloth.reviews.filter(review => review.shouldDisplay),
+        reviews: cloth.reviews.filter(review => review.shouldDisplay)
       };
     } catch (err) {
       throw new CustomError({
@@ -85,7 +89,7 @@ module.exports = {
 
       const cloth = await Clothes.findOne({ url: data.url }).populate('reviews');
 
-      const validReviewsCount = cloth.reviews.filter(review => review.shouldDisplay).length
+      const validReviewsCount = cloth.reviews.filter(review => review.shouldDisplay).length;
 
       cloth.averageOverall = getNewRateValue(cloth.averageOverall, ratings.overall, validReviewsCount);
       cloth.averageQuality = getNewRateValue(cloth.averageQuality, ratings.quality, validReviewsCount);
@@ -102,17 +106,17 @@ module.exports = {
 
   deleteReviewFromCloth: async (reviewId, deletedReviewStats) => {
     try {
-      const cloth = await Clothes.findOne({ reviews: reviewId });      
-      const validReviewsCount = cloth.reviews.filter(review => review.shouldDisplay).length
-      cloth.reviews = cloth.reviews.filter(item => item.toString() !== reviewId.toString());      
+      const cloth = await Clothes.findOne({ reviews: reviewId }).populate('reviews');
+      const validReviewsCount = cloth.reviews.filter(review => review.shouldDisplay).length;
+      cloth.reviews = cloth.reviews.map(review => review._id).filter(id => String(id) !== reviewId.toString());
       cloth.looksGreatCount -= deletedReviewStats.looksGreatCount;
-      cloth.helpfulCount -= deletedReviewStats.helpfulCount;      
+      cloth.helpfulCount -= deletedReviewStats.helpfulCount;
 
       cloth.averageOverall = getOldRateValue(cloth.averageOverall, deletedReviewStats.overall, validReviewsCount);
       cloth.averageQuality = getOldRateValue(cloth.averageQuality, deletedReviewStats.quality, validReviewsCount);
       cloth.averageFit = getOldRateValue(cloth.averageFit, deletedReviewStats.fit, validReviewsCount);
       cloth.averageShipping = getOldRateValue(cloth.averageShipping, deletedReviewStats.shipping, validReviewsCount);
-      
+
       await cloth.save();
     } catch (err) {
       throw new CustomError({
