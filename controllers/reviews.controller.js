@@ -100,13 +100,13 @@ module.exports = {
     try {      
       const { code, reviewTempId, url } = req.body;
 
-      const mobileCodeData = await MobileCodesModel.findOne({
+      const mobileCode = await MobileCodesModel.findOne({
         reviewTempId,
         url,
         code,
       })
 
-      if (!mobileCodeData) {
+      if (!mobileCode) {
         throw new CustomError({
           message: 'Upload code not found',
           code: 404
@@ -124,9 +124,12 @@ module.exports = {
         });
       }
 
+      mobileCode.isUsed = true;
+
       const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);      
-      const uploaded = await reviewsService.addReview(reviewTempId, mobileCodeData.userId, url, reviewImageURLs);
+      const uploaded = await reviewsService.addReview(reviewTempId, mobileCode.userId, url, reviewImageURLs);
       await clothesService.updateCloth(uploaded._id, url);
+      await mobileCode.save();
       return sendJson({
         res,
         data: uploaded,

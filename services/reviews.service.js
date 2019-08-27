@@ -106,7 +106,7 @@ module.exports = {
         code: err.code
       });
     }
-  }, 
+  },
 
   getReviewByTempId: async id => {
     try {
@@ -114,7 +114,7 @@ module.exports = {
       if (!review) {
         throw new CustomError({
           message: 'No reviews by this id',
-          code: 404
+          code: 200
         });
       }
 
@@ -125,7 +125,7 @@ module.exports = {
         code: err.code
       });
     }
-  }, 
+  },
 
   addReview: async (reviewTempId, id, url, imageUrls) => {
     try {
@@ -190,7 +190,7 @@ module.exports = {
 
   reviewsByUserId: async userId => {
     try {
-      const posts = await Reviews.find({ userId: userId, shouldDisplay: true });
+      const posts = await Reviews.find({ userId: userId, shouldDisplay: true }).sort({ createdAt: -1 });
       return posts;
     } catch (err) {
       throw new CustomError({

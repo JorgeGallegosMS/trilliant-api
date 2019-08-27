@@ -86,7 +86,22 @@ const uploadReview = async (review, reviewImages) => {
   const currentReviewImages = reviewImages
     .filter(imageData => imageData.imageCode === review.imageCode)
     .filter(imageData => fs.existsSync(path.join(__dirname, 'images', imageData.imageName)))
-    .filter(imageData => imageData.imageName.split('.').pop());
+    .filter(imageData => imageData.imageName.split('.').pop())
+    .sort((a, b) => {
+      if (a.thumbnail === b.thumbnail) {
+        return 0;
+      }
+
+      if (a.thumbnail === 'Yes') {
+        return -1;
+      }
+
+      if (b.thumbnail === 'Yes') {
+        return 1;
+      }
+
+      return 0;
+    });
 
   if (!currentReviewImages.length) {
     console.error('Too many images for review with imageCode. Max 5 images allowed', review.imageCode);
