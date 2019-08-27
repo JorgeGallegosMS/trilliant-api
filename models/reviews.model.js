@@ -20,7 +20,8 @@ const ReviewsSchema = mongoose.Schema(
       mongoose.Schema(
         {
           url: String,
-          rotate: Number
+          rotate: Number,
+          isThumbnail: Boolean,
         },
         { _id: false }
       )

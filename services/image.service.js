@@ -28,9 +28,16 @@ module.exports.uploadReviewImagesToCloudinary = async reviewTempId => {
     images
       .map(image => ({
         data: fs.readFileSync(path.join(IMAGE_TEMP_DIR, image.filename)),
-        path: path.join(IMAGE_TEMP_DIR, image.filename)
+        path: path.join(IMAGE_TEMP_DIR, image.filename),
+        isThumbnail: image.isThumbnail,
       }))
-      .map(file => module.exports.uploadToCloudinary(file, reviewTempId))
+      .map(async file => {
+        const uploadRes = await module.exports.uploadToCloudinary(file, reviewTempId);
+        return {
+          isThumbnail: file.isThumbnail,
+          ...uploadRes,
+        }
+      })
   );
 
   images.map(image => {
@@ -43,7 +50,7 @@ module.exports.uploadReviewImagesToCloudinary = async reviewTempId => {
 
   await TempImageModel.deleteMany({ reviewTempId });
 
-  return imagesUploadData.map(imageUploadData => imageUploadData.secure_url);
+  return imagesUploadData.map(imageUploadData => ({ url: imageUploadData.secure_url, isThumbnail: imageUploadData.isThumbnail }));
 };
 
 module.exports.uploadToCloudinary = async (file, tag) => {
@@ -93,7 +100,7 @@ module.exports.deleteTempImageById = async imageId => {
 };
 
 module.exports.deleteTempImagesByReviewTempId = async reviewTempId => {
-  const images = await TempImageModel.find({ reviewTempId }).lean();    
+  const images = await TempImageModel.find({ reviewTempId }).lean();
 
   images.map(image => {
     try {

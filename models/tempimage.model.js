@@ -11,7 +11,11 @@ const TempImageSchema = mongoose.Schema(
     filename: {
       type: String,
       required: true
-    }
+    },
+    isThumbnail: {
+      type: Boolean,
+      default: false
+    },
   },
   {
     timestamps: true

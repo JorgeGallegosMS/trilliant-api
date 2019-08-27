@@ -132,7 +132,7 @@ module.exports = {
       const review = new Reviews({
         userId: id,
         url: url,
-        imageUrls: imageUrls.map(url => ({ url, rotate: 0 })),
+        imageUrls: imageUrls.map(({ url, isThumbnail }) => ({ url, rotate: 0, isThumbnail })),
         reviewTempId,
       });
 
