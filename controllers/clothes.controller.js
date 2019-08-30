@@ -38,14 +38,25 @@ module.exports = {
   getCloths: async (req, res) => {
     try {
       const [start, limit] = parseStartLimit(req.query.range);
+      const { sort, sortOrder, search } = req.query;
 
-      const clothes = await ClothModel.find()
+      const clothes = await ClothModel
+        .find(search ? {
+          name: new RegExp(`.*${search}.*`, 'i')
+        } : {})
+        .sort(sort ? {
+          [sort]: sortOrder === 'ASC' ? 1 : -1,
+        } : {})
         .populate('reviews')
+        .populate({ path: 'reviews', populate: { path: 'userId' } })
         .skip(start)
         .limit(limit);
-      const clothesCount = await ClothModel.countDocuments();
+      const clothesCount = await ClothModel.countDocuments(search ? {
+        name: new RegExp(`.*${search}.*`, 'i')
+      } : {});
 
       res.setHeader('Content-Range', `clothes 0-${clothes.length}/${clothesCount}`);
+      res.setHeader('Content-Total', clothesCount);
       res.contentType('json');
       res.json(clothes);
     } catch (err) {

@@ -19,9 +19,9 @@ db()
     app.disable('x-powered-by');
     app.use(
       cors({
-        exposedHeaders: ['Content-Range', 'X-Total-Count']
+        exposedHeaders: ['Content-Range', 'Content-Total', 'X-Total-Count']
       })
-    );    
+    );
 
     app.use(
       bodyParser.urlencoded({
