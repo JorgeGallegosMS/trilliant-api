@@ -8,5 +8,5 @@ module.exports.parseStartLimit = range => {
 
   const resultStart = parseInt(start, 10) || 0;
 
-  return [resultStart, parseInt(end, 10) ? parseInt(end, 10) - resultStart + 1 : API_LIST_REQUEST_DEFAULT_LIMIT];
+  return [resultStart, parseInt(end, 10) ? parseInt(end, 10) - resultStart : API_LIST_REQUEST_DEFAULT_LIMIT];
 };
