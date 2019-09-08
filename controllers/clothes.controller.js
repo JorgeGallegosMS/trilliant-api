@@ -49,14 +49,20 @@ module.exports = {
         })
         .sort(sort ? {
           [sort]: sortOrder === 'ASC' ? 1 : -1,
-        } : {})
+          updatedAt: 'DESC',
+        } : {
+          updatedAt: 'DESC',
+        })
         .populate('reviews')
         .populate({ path: 'reviews', populate: { path: 'userId' } })
         .skip(start)
         .limit(limit);
       const clothesCount = await ClothModel.countDocuments(search ? {
-        name: new RegExp(`.*${search}.*`, 'i')
-      } : {});
+        name: new RegExp(`.*${search}.*`, 'i'),
+        store: { '$nin': [ null, '' ] },
+      } : {
+        store: { '$nin': [ null, '' ] },
+      });
 
       res.setHeader('Content-Range', `clothes 0-${clothes.length}/${clothesCount}`);
       res.setHeader('Content-Total', clothesCount);

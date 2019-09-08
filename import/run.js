@@ -36,24 +36,31 @@ const parseSocialMediaData = (type, data) => {
   };
 };
 
-const uploadReview = async (review, reviewImages) => {
-  if (!review || !review.userEmail) {
+const uploadReview = async (review, reviewImages, reviewUsers) => {
+  if (!review) {
     console.log('Invalid review data');
     return;
   }
 
+  const userData = reviewUsers.find(user => user.userID === review.userID);
+
+  if (!userData) {
+    console.log('User not found');
+    return;
+  }
+
   const user = await UserModel.findOneAndUpdate(
-    { email: review.userEmail.toLowerCase() },
+    { email: userData.userEmail.toLowerCase() },
     {
-      email: review.userEmail.toLowerCase(),
-      firstName: review.userFirstName,
-      lastName: review.userLastName,
-      password: await UserModel.createHash(review.userPassword),
+      email: userData.userEmail.toLowerCase(),
+      firstName: userData.userFirstName,
+      lastName: userData.userLastName,
+      password: await UserModel.createHash(userData.userPassword),
       links: {
-        ...parseSocialMediaData('Twitter', review),
-        ...parseSocialMediaData('Instagram', review),
-        ...parseSocialMediaData('Facebook', review),
-        ...parseSocialMediaData('Blog', review)
+        ...parseSocialMediaData('Twitter', userData),
+        ...parseSocialMediaData('Instagram', userData),
+        ...parseSocialMediaData('Facebook', userData),
+        ...parseSocialMediaData('Blog', userData)
       }
     },
     { upsert: true, new: true  }
@@ -212,6 +219,7 @@ const main = async () => {
 
     const reviewsData = fs.readFileSync(path.join(__dirname, './reviews.csv'), 'utf-8');
     const reviewImagesData = fs.readFileSync(path.join(__dirname, './review_images.csv'), 'utf-8');
+    const reviewUsersData = fs.readFileSync(path.join(__dirname, './review_users.csv'), 'utf-8');
 
     const reviews = parse(reviewsData, {
       columns: true,
@@ -223,6 +231,11 @@ const main = async () => {
       skip_empty_lines: true
     });
 
+    const reviewUsers = parse(reviewUsersData, {
+      columns: true,
+      skip_empty_lines: true
+    });
+
     await Promise.all(
       reviews.map((review, idx) => {
         return limit(async () => {
@@ -230,7 +243,7 @@ const main = async () => {
           const session = await database.startSession();
           await session.startTransaction();
           try {
-            await uploadReview(review, reviewImages);
+            await uploadReview(review, reviewImages, reviewUsers);
             await session.commitTransaction();
           } catch (err) {
             console.error('[ERROR] transaction error', err);
