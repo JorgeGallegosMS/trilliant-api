@@ -42,8 +42,11 @@ module.exports = {
 
       const clothes = await ClothModel
         .find(search ? {
-          name: new RegExp(`.*${search}.*`, 'i')
-        } : {})
+          name: new RegExp(`.*${search}.*`, 'i'),
+          store: { '$nin': [ null, '' ] },
+        } : {
+          store: { '$nin': [ null, '' ] },
+        })
         .sort(sort ? {
           [sort]: sortOrder === 'ASC' ? 1 : -1,
         } : {})
