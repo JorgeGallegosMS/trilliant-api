@@ -78,7 +78,7 @@ module.exports = {
     }
   },
 
-  updateRates: async data => {
+  updateRates: async (data, clothUrl) => {
     try {
       const ratings = {
         overall: data.overall,
@@ -87,7 +87,7 @@ module.exports = {
         shipping: data.shipping
       };
 
-      const cloth = await Clothes.findOne({ url: data.url }).populate('reviews');
+      const cloth = await Clothes.findOne({ url: clothUrl }).populate('reviews');
 
       const validReviewsCount = cloth.reviews.filter(review => review.shouldDisplay).length;
 

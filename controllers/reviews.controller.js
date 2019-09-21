@@ -83,7 +83,7 @@ module.exports = {
       const userId = req.decodedToken._id;
       const { reviewTempId, url } = req.body;
 
-      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);      
+      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);
       const uploaded = await reviewsService.addReview(reviewTempId, userId, url, reviewImageURLs);
       await clothesService.updateCloth(uploaded._id, url);
       return sendJson({
@@ -97,7 +97,7 @@ module.exports = {
   },
 
   addReviewMobile: async (req, res) => {
-    try {      
+    try {
       const { code, reviewTempId, url } = req.body;
 
       const mobileCode = await MobileCodesModel.findOne({
@@ -126,7 +126,7 @@ module.exports = {
 
       mobileCode.isUsed = true;
 
-      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);      
+      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);
       const uploaded = await reviewsService.addReview(reviewTempId, mobileCode.userId, url, reviewImageURLs);
       await clothesService.updateCloth(uploaded._id, url);
       await mobileCode.save();
@@ -206,7 +206,7 @@ module.exports = {
       const reviewId = req.params.id;
       const data = Object.assign({}, req.body);
       const ratedReview = await reviewsService.rateCommentReview(reviewId, data);
-      await clothesService.updateRates(data);
+      await clothesService.updateRates(data, ratedReview.url);
       return sendJson({
         res,
         data: ratedReview,
@@ -227,7 +227,7 @@ module.exports = {
 
   helpfulUpdate: async (req, res) => {
     try {
-      const reviewId = req.params.id;      
+      const reviewId = req.params.id;
       const userId = req.decodedToken._id;
       const action = req.body.helpful;
 
@@ -244,7 +244,7 @@ module.exports = {
 
   looksGreatUpdate: async (req, res) => {
     try {
-      const reviewId = req.params.id;      
+      const reviewId = req.params.id;
       const userId = req.decodedToken._id;
       const action = req.body.looksGreat;
 
@@ -257,14 +257,14 @@ module.exports = {
     } catch (err) {
       errorHandler(err, req, res);
     }
-  }, 
+  },
 
   deleteReview: async (req, res) => {
     try {
       const reviewId = req.params.id;
       const userId = req.decodedToken._id;
 
-      const reviewToDelete = await reviewsService.getReviewById(reviewId);      
+      const reviewToDelete = await reviewsService.getReviewById(reviewId);
       await clothesService.deleteReviewFromCloth(reviewId, reviewToDelete);
       await userService.removeDeletedReviewStatsFromUserModel(userId, reviewToDelete);
       await reviewsService.deleteReview(reviewId, userId);
