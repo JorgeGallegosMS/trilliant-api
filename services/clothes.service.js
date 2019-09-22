@@ -35,7 +35,7 @@ const getOldRateValue = (avgValue, deleteValue, currentCount) => {
 module.exports = {
   getClothByUrl: async url => {
     try {
-      const cloth = await Clothes.findOne({ url: { $regex: url, $options: 'i'} })
+      const cloth = await Clothes.findOne({ url: { $in: [url, url.replace(/^\/+|\/+$/g, '')]} })
         .populate('reviews')
         .populate({ path: 'reviews', populate: { path: 'userId' } })
         .lean();
