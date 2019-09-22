@@ -15,6 +15,7 @@ const { ReviewsModel } = require('../models/reviews.model');
 const reviewsController = require('../controllers/reviews.controller');
 const imageService = require('../services/image.service');
 const db = require('../libs/db.lib');
+const { REVIEW_IMAGE_LIMIT } = require('../constants');
 
 const parseSocialMediaData = (type, data) => {
   if (!type || !data) {
@@ -95,8 +96,8 @@ const uploadReview = async (review, reviewImages, reviewUsers) => {
     .filter(imageData => fs.existsSync(path.join(__dirname, 'images', imageData.imageName)))
     .filter(imageData => imageData.imageName.split('.').pop())
 
-  if (!currentReviewImages.length) {
-    console.error('Too many images for review with imageCode. Max 5 images allowed', review.imageCode);
+  if (currentReviewImages.length > REVIEW_IMAGE_LIMIT) {
+    console.error(`Too many images for review with imageCode ${review.imageCode}. Max ${REVIEW_IMAGE_LIMIT} images allowed`);
     return;
   }
 

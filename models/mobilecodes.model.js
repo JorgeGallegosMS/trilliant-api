@@ -2,6 +2,7 @@ const generate = require('nanoid/generate');
 const nanoid = require('nanoid');
 const dictionary = require('nanoid-dictionary');
 const mongoose = require('mongoose');
+const moment = require('moment');
 
 const CustomError = require('../libs/custom-error.lib');
 
@@ -83,7 +84,7 @@ MobileCodesSchema.statics.verifyAndGetCode = async function(code) {
   return existingCode;
 };
 
-MobileCodesSchema.statics.verifyCodeByReviewId = async function(code, reviewTempId) {  
+MobileCodesSchema.statics.verifyCodeByReviewId = async function(code, reviewTempId) {
   const existingCode = await this.findOne({ code, reviewTempId, isUsed: false });
 
   if (!existingCode) {
