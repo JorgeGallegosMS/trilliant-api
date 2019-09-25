@@ -38,7 +38,7 @@ module.exports = {
       const trimmedUrl = url.replace(/^\/+|\/+$/g, '');
       const strippedUrl = trimmedUrl.split(/[?#]/)[0];
       const preparedUrl = strippedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const cloth = await Clothes.findOne({ url: new RegExp(preparedUrl, 'i') })
+      const cloth = await Clothes.findOne({ url: new RegExp(`${preparedUrl}(\\?.*)?$`, 'i') })
         .populate('reviews')
         .populate({ path: 'reviews', populate: { path: 'userId' } })
         .lean();
