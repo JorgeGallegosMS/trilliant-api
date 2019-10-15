@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env NODE_ENV=production node --require dotenv/config app.js",
     "dev": "cross-env NODE_ENV=development node --require dotenv/config app.js",
-    "import": "cross-env NODE_ENV=production node --require dotenv/config ./import/run.js"
+    "import": "cross-env NODE_ENV=production node --require dotenv/config ./import/run.js",
+    "import-dev": "cross-env NODE_ENV=development node --require dotenv/config ./import/run.js",
+    "migrate-dev": "cross-env NODE_ENV=development node --require dotenv/config ./node_modules/.bin/migrate-mongo"
   },
   "keywords": [
     "Trillant",

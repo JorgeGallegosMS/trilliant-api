@@ -41,7 +41,8 @@ const ClothSchema = mongoose.Schema(
     },
     name: {
       type: String
-    }
+    },
+    tags: [{ type: 'String' }], //default value is []
   },
   {
     timestamps: true

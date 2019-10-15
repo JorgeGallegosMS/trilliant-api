@@ -1,21 +1,22 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const promiseLimit = require('promise-limit');
-const nanoid = require('nanoid');
-const parse = require('csv-parse/lib/sync');
-const mongoose = require('mongoose');
-const moment = require('moment');
+const promiseLimit = require("promise-limit");
+const nanoid = require("nanoid");
+const parse = require("csv-parse/lib/sync");
+const mongoose = require("mongoose");
+const moment = require("moment");
+const _ = require("lodash");
 
 const limit = promiseLimit(5);
 
-const { UserModel } = require('../models/user.model');
-const ClothModel = require('../models/cloth.model');
-const { ReviewsModel } = require('../models/reviews.model');
-const reviewsController = require('../controllers/reviews.controller');
-const imageService = require('../services/image.service');
-const db = require('../libs/db.lib');
-const { REVIEW_IMAGE_LIMIT } = require('../constants');
+const { UserModel } = require("../models/user.model");
+const ClothModel = require("../models/cloth.model");
+const { ReviewsModel } = require("../models/reviews.model");
+const reviewsController = require("../controllers/reviews.controller");
+const imageService = require("../services/image.service");
+const db = require("../libs/db.lib");
+const { REVIEW_IMAGE_LIMIT } = require("../constants");
 
 const parseSocialMediaData = (type, data) => {
   if (!type || !data) {
@@ -25,7 +26,10 @@ const parseSocialMediaData = (type, data) => {
   if (!data[`user${type}Handle`] || !data[`user${type}Link`]) {
     return {};
   }
-  if (data[`user${type}Handle`] === 'none' || data[`user${type}Link`] === 'none') {
+  if (
+    data[`user${type}Handle`] === "none" ||
+    data[`user${type}Link`] === "none"
+  ) {
     return {};
   }
 
@@ -39,14 +43,14 @@ const parseSocialMediaData = (type, data) => {
 
 const uploadReview = async (review, reviewImages, reviewUsers) => {
   if (!review) {
-    console.log('Invalid review data');
+    console.log("Invalid review data");
     return;
   }
 
   const userData = reviewUsers.find(user => user.userID === review.userID);
 
   if (!userData) {
-    console.log('User not found');
+    console.log("User not found");
     return;
   }
 
@@ -58,46 +62,78 @@ const uploadReview = async (review, reviewImages, reviewUsers) => {
       lastName: userData.userLastName,
       password: await UserModel.createHash(userData.userPassword),
       links: {
-        ...parseSocialMediaData('Twitter', userData),
-        ...parseSocialMediaData('Instagram', userData),
-        ...parseSocialMediaData('Facebook', userData),
-        ...parseSocialMediaData('Blog', userData)
+        ...parseSocialMediaData("Twitter", userData),
+        ...parseSocialMediaData("Instagram", userData),
+        ...parseSocialMediaData("Facebook", userData),
+        ...parseSocialMediaData("Blog", userData)
       }
     },
-    { upsert: true, new: true  }
+    { upsert: true, new: true }
   ).lean();
 
   if (!user) {
-    console.error('Failed to create user');
+    console.error("Failed to create user");
     return;
   }
 
-  const reviewExists = await ReviewsModel.findOne({
+  const reviewThatExists = await ReviewsModel.findOne({
     url: review.itemURL,
     comment: review.comment
   });
 
-  let clothReviewExists = false;
+  let clothModelThatExists = null;
 
-  if (reviewExists) {
-    clothReviewExists = await ClothModel.findOne({
+  if (reviewThatExists) {
+    clothModelThatExists = await ClothModel.findOne({
       url: review.itemURL,
-      reviews: mongoose.Types.ObjectId(reviewExists._id)
+      reviews: mongoose.Types.ObjectId(reviewThatExists._id)
     });
   }
 
-  if (reviewExists && clothReviewExists) {
-    console.log('Review already exists');
+  const newClothData = {
+    url: review.itemURL,
+    store: review.storeName,
+    name: review.productTitle,
+    price: parseInt(review.priceInDollars, 10) || 0,
+    tags: review.tags ? review.tags.split(";").sort() : []
+  };
+  if (reviewThatExists && clothModelThatExists) {
+    console.log("Review already exists");
+    // let's test if the cloth model is the same
+    if (
+      !_.isEqual(
+        _.pick(clothModelThatExists, Object.keys(newClothData)),
+        newClothData
+      ) &&
+      newClothData.tags.length !== 0
+    ) {
+      console.log("Cloth data tags have changed. Updating ...");
+      await ClothModel.findOneAndUpdate(
+        {
+          url: review.itemURL,
+          reviews: mongoose.Types.ObjectId(reviewThatExists._id)
+        },
+        { $set: newClothData },
+        { upsert: true, new: true }
+      ).lean();
+    }
+    // if not, we should edit it and return
     return;
   }
 
   const currentReviewImages = reviewImages
     .filter(imageData => imageData.imageCode === review.imageCode)
-    .filter(imageData => fs.existsSync(path.join(__dirname, 'images', imageData.imageName)))
-    .filter(imageData => imageData.imageName.split('.').pop())
+    .filter(imageData =>
+      fs.existsSync(path.join(__dirname, "images", imageData.imageName))
+    )
+    .filter(imageData => imageData.imageName.split(".").pop());
 
   if (currentReviewImages.length > REVIEW_IMAGE_LIMIT) {
-    console.error(`Too many images for review with imageCode ${review.imageCode}. Max ${REVIEW_IMAGE_LIMIT} images allowed`);
+    console.error(
+      `Too many images for review with imageCode ${
+        review.imageCode
+      }. Max ${REVIEW_IMAGE_LIMIT} images allowed`
+    );
     return;
   }
 
@@ -105,30 +141,28 @@ const uploadReview = async (review, reviewImages, reviewUsers) => {
     {
       url: review.itemURL
     },
-    {
-      url: review.itemURL,
-      store: review.storeName,
-      name: review.productTitle,
-      price: parseInt(review.priceInDollars, 10) || 0
-    },
+    newClothData,
     { upsert: true, new: true }
   ).lean();
 
   if (!cloth) {
-    console.error('[ERROR] failed to create cloth');
+    console.error("[ERROR] failed to create cloth");
     return;
   }
 
   const reviewTempId = nanoid();
   await Promise.all(
     currentReviewImages.map(async imageData => {
-      const filename = `${nanoid()}.${imageData.imageName.split('.').pop()}`;
-      fs.copyFileSync(path.join(__dirname, 'images', imageData.imageName), path.join(__dirname, '../upload', filename));
+      const filename = `${nanoid()}.${imageData.imageName.split(".").pop()}`;
+      fs.copyFileSync(
+        path.join(__dirname, "images", imageData.imageName),
+        path.join(__dirname, "../upload", filename)
+      );
 
       await imageService.saveTempImageData({
-        isThumbnail: imageData.thumbnail === 'Yes',
+        isThumbnail: imageData.thumbnail === "Yes",
         filename,
-        reviewTempId,
+        reviewTempId
       });
       return;
     })
@@ -164,7 +198,7 @@ const uploadReview = async (review, reviewImages, reviewUsers) => {
   );
 
   if (!savedReview || saveReviewErr) {
-    console.error('Critical error saving the review', saveReviewErr);
+    console.error("Critical error saving the review", saveReviewErr);
     return;
   }
 
@@ -176,13 +210,25 @@ const uploadReview = async (review, reviewImages, reviewUsers) => {
         id: savedReview._id
       },
       body: {
-        overall: review.overallRating !== 'no rating' ? Math.round(review.overallRating * 20) : -1,
-        quality: review.qualityRating !== 'no rating' ? Math.round(review.qualityRating * 20) : -1,
-        fit: review.fitRating !== 'no rating' ? Math.round(review.fitRating * 20) : -1,
-        shipping: review.shippingRating !== 'no rating' ? Math.round(review.shippingRating * 20) : -1,
+        overall:
+          review.overallRating !== "no rating"
+            ? Math.round(review.overallRating * 20)
+            : -1,
+        quality:
+          review.qualityRating !== "no rating"
+            ? Math.round(review.qualityRating * 20)
+            : -1,
+        fit:
+          review.fitRating !== "no rating"
+            ? Math.round(review.fitRating * 20)
+            : -1,
+        shipping:
+          review.shippingRating !== "no rating"
+            ? Math.round(review.shippingRating * 20)
+            : -1,
         comment: review.comment,
         url: review.itemURL,
-        imageUrls: savedReview.imageUrls,
+        imageUrls: savedReview.imageUrls
       }
     },
     {
@@ -205,28 +251,42 @@ const uploadReview = async (review, reviewImages, reviewUsers) => {
       _id: mongoose.Types.ObjectId(savedReview._id)
     },
     {
-      createdAt: (moment(review.reviewDate, 'M/DD/YYYY') || new Date()).toDate()
+      createdAt: (moment(review.reviewDate, "M/DD/YYYY") || new Date()).toDate()
     }
   );
 
-  console.log('Created review with id', savedReview._id, 'for cloth', cloth._id);
+  console.log(
+    "Created review with id",
+    savedReview._id,
+    "for cloth",
+    cloth._id
+  );
 
   return;
 };
 
 const main = async () => {
+  let database;
   try {
-    const database = await db();
+    database = await db();
 
-    const reviewsData = fs.readFileSync(path.join(__dirname, './reviews.csv'), 'utf-8');
-    const reviewImagesData = fs.readFileSync(path.join(__dirname, './review_images.csv'), 'utf-8');
-    const reviewUsersData = fs.readFileSync(path.join(__dirname, './review_users.csv'), 'utf-8');
+    const reviewsData = fs.readFileSync(
+      path.join(__dirname, "./reviews.csv"),
+      "utf-8"
+    );
+    const reviewImagesData = fs.readFileSync(
+      path.join(__dirname, "./review_images.csv"),
+      "utf-8"
+    );
+    const reviewUsersData = fs.readFileSync(
+      path.join(__dirname, "./review_users.csv"),
+      "utf-8"
+    );
 
     const reviews = parse(reviewsData, {
       columns: true,
       skip_empty_lines: true
     });
-
     const reviewImages = parse(reviewImagesData, {
       columns: true,
       skip_empty_lines: true
@@ -245,9 +305,10 @@ const main = async () => {
           await session.startTransaction();
           try {
             await uploadReview(review, reviewImages, reviewUsers);
+            console.log("commiting the transaction ...");
             await session.commitTransaction();
           } catch (err) {
-            console.error('[ERROR] transaction error', err);
+            console.error("[ERROR] transaction error", err);
             await session.abortTransaction();
           }
           return;
@@ -258,7 +319,7 @@ const main = async () => {
     await database.connection.close();
     process.exit();
   } catch (err) {
-    console.error('[ERROR] import parse error', err);
+    console.error("[ERROR] import parse error", err);
     await database.connection.close();
     process.exit(-1);
   }
