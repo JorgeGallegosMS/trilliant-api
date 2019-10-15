@@ -100,22 +100,22 @@ const uploadReview = async (review, reviewImages, reviewUsers) => {
   if (reviewThatExists && clothModelThatExists) {
     console.log("Review already exists");
     // let's test if the cloth model is the same
+    const tagsUnion = _.union(newClothData.tags, clothModelThatExists.tags)
     if (
       !_.isEqual(
         _.pick(clothModelThatExists, Object.keys(newClothData)),
         newClothData
       ) &&
-      newClothData.tags.length !== 0
+      tagsUnion.length > clothModelThatExists.tags.length
     ) {
       console.log("Cloth data tags have changed. Updating ...");
-      await ClothModel.findOneAndUpdate(
+      await ClothModel.update(
         {
           url: review.itemURL,
           reviews: mongoose.Types.ObjectId(reviewThatExists._id)
         },
-        { $set: newClothData },
-        { upsert: true, new: true }
-      ).lean();
+        { $set: { ...newClothData, tags: tagsUnion } },
+      )
     }
     // if not, we should edit it and return
     return;
