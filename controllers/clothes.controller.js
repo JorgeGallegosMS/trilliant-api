@@ -38,15 +38,13 @@ module.exports = {
   getCloths: async (req, res) => {
     try {
       const [start, limit] = parseStartLimit(req.query.range);
-      const { sort, sortOrder, search } = req.query;
+      const { sort, sortOrder, search, tags } = req.query;
+      const findQuery = {store: { '$nin': [ null, '' ] },}
+      if(search) findQuery.name = new RegExp(`.*${search}.*`, 'i')
+      if(tags) findQuery.tags = { $in: tags.split(',') }
 
       const clothes = await ClothModel
-        .find(search ? {
-          name: new RegExp(`.*${search}.*`, 'i'),
-          store: { '$nin': [ null, '' ] },
-        } : {
-          store: { '$nin': [ null, '' ] },
-        })
+        .find(findQuery)
         .sort(sort ? {
           [sort]: sortOrder === 'ASC' ? 1 : -1,
           updatedAt: 'DESC',
