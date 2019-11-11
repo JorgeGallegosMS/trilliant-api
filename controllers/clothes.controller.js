@@ -21,7 +21,16 @@ module.exports = {
       errorHandler(err, req, res);
     }
   },
-
+  getTags: async (req, res)=>{
+    try{
+      const distinctTags = await ClothModel.distinct('tags')
+      return sendJson({
+        res, data: distinctTags, message: 'Clothes tags'
+      })
+    }catch(err){
+      errorHandler(err, req, res)
+    } 
+  },
   //TODO:
   getClothRatings: async (req, res) => {
     try {

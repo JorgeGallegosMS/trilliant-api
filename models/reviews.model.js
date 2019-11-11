@@ -28,19 +28,19 @@ const ReviewsSchema = mongoose.Schema(
     ],
     overall: {
       type: Number,
-      default: 50
+      default: 60
     },
     quality: {
       type: Number,
-      default: 50
+      default: 60
     },
     fit: {
       type: Number,
-      default: 50
+      default: 60
     },
     shipping: {
       type: Number,
-      default: 50
+      default: 60
     },
     looksGreatCount: {
       type: Number,
