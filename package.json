@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Trillant back-end part",
   "main": "app.js",
+  "engines": {
+    "node": "10.16.3"
+  },
+  "engineStrict" : true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env NODE_ENV=production node --require dotenv/config app.js",
