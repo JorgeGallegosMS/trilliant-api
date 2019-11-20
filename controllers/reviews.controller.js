@@ -11,12 +11,17 @@ const ratesService = require("../services/rates.service");
 const MobileCodesModel = require("../models/mobilecodes.model");
 const { ReviewsModel } = require("../models/reviews.model");
 const bulkUploadReviews = require("../services/bulkUploadReviews");
+const util = require('util')
 const clothModel = require("../models/cloth.model");
+const rimraf = require("rimraf");
+
 
 module.exports = {
   bulkUploadReviews: async (req, res) => {
     try {
       const { result, errors } = await bulkUploadReviews(req.files);
+      // delete the bulk folder
+      await util.promisify(rimraf)('./bulk') 
       // parse CSV first as we want to create reviews as soon as the images are uploaded to the cloud
 
       const userId = req.decodedToken._id;

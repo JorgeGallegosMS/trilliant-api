@@ -4,9 +4,9 @@
   "description": "Trillant back-end part",
   "main": "app.js",
   "engines": {
-    "node": "10.16.3"
+    "node": "10.x.x"
   },
-  "engineStrict" : true,
+  "engineStrict": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cross-env NODE_ENV=production node --require dotenv/config app.js",
@@ -49,10 +49,13 @@
     "nodemon": "^1.18.9",
     "pm2": "^3.2.9",
     "promise-limit": "^2.7.0",
+    "recursive-readdir": "^2.2.2",
+    "rimraf": "^3.0.0",
     "rxjs": "^6.5.3",
     "rxjs-stream": "^3.1.0",
     "serve-favicon": "^2.5.0",
     "sharp": "^0.21.3",
+    "stream-to-promise": "^2.2.0",
     "unzipper": "^0.10.5"
   },
   "devDependencies": {
