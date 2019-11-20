@@ -6,7 +6,9 @@ const imageUploadMiddleware = require('../middlewares/imageUpload');
 const verifyUploadToken = require('../middlewares/verifyUploadToken');
 const localTokenMiddleware = require('../middlewares/jwt-local.middleware').verifyToken;
 const bodyValidationMiddleware = require('../middlewares/body-validation');
+const requireAdmin = require('../middlewares/requireAdmin');
 
+router.post('/bulk-upload-reviews', localTokenMiddleware, requireAdmin, imageUploadMiddleware, reviewsCtrl.bulkUploadReviews)
 router.post('/upload-file-mobile', verifyUploadToken, imageUploadMiddleware, reviewsCtrl.addTempReviewImage);
 router.delete('/upload-file-mobile', verifyUploadToken, reviewsCtrl.removeTempReviewImage);
 router.post('/upload-file', localTokenMiddleware, imageUploadMiddleware, reviewsCtrl.addTempReviewImage);

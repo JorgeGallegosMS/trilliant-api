@@ -40,6 +40,10 @@ function createUserSchema(fieldsToAdd) {
       type: Number,
       default: 0
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
     helpfulCount: {
       type: Number,
       default: 0

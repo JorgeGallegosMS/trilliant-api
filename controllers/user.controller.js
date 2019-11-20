@@ -158,7 +158,8 @@ module.exports = {
         res,
         data: {
           localToken: token,
-          refreshToken: refToken
+          refreshToken: refToken,
+          isAdmin: user.isAdmin,
         },
         msg: 'User logged in',
         redirect: '/api/user/profile'

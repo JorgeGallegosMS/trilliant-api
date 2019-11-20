@@ -1,17 +1,89 @@
-const get = require('lodash/get');
+const get = require("lodash/get");
 
-const reviewsService = require('../services/reviews.service');
-const clothesService = require('../services/clothes.service');
-const errorHandler = require('../services/error-handler.service');
-const sendJson = require('../services/message.service');
-const userService = require('../services/user.service');
-const imageService = require('../services/image.service');
-const ratesService = require('../services/rates.service');
+const reviewsService = require("../services/reviews.service");
+const clothesService = require("../services/clothes.service");
+const errorHandler = require("../services/error-handler.service");
+const sendJson = require("../services/message.service");
+const userService = require("../services/user.service");
+const imageService = require("../services/image.service");
+const ratesService = require("../services/rates.service");
 
-const MobileCodesModel = require('../models/mobilecodes.model');
-const { ReviewsModel } = require('../models/reviews.model');
+const MobileCodesModel = require("../models/mobilecodes.model");
+const { ReviewsModel } = require("../models/reviews.model");
+const bulkUploadReviews = require("../services/bulkUploadReviews");
+const clothModel = require("../models/cloth.model");
 
 module.exports = {
+  bulkUploadReviews: async (req, res) => {
+    try {
+      const { result, errors } = await bulkUploadReviews(req.files);
+      // parse CSV first as we want to create reviews as soon as the images are uploaded to the cloud
+
+      const userId = req.decodedToken._id;
+      const newClothes = result.map(
+        ({
+          itemURL: url,
+          productTitle: name,
+          storeName: store,
+          priceInDollars: price,
+          Tags: tags
+        }) => ({
+          url,
+          name,
+          store,
+          price: parseInt(price, 10) || 0,
+          tags: tags.split(";")
+        })
+      );
+      console.log('new clothes', newClothes)
+      // create clothes or update them
+      const clothes = await clothModel.bulkWrite(
+        newClothes.map(cloth => ({
+          updateOne: {
+            filter: { url: cloth.url },
+            update: { $set: cloth },
+            upsert: true
+          }
+        }))
+      );
+      const getRating = rating => rating === 'no rating'? -1: Math.round(+rating * 20)
+      const newReviews = result.map(
+        ({
+          fitRating: fit,
+          overallRating: overall,
+          qualityRating: quality,
+          shippingRating: shipping,
+          itemURL: url,
+          imageUrls,
+          comment
+        }) => ({
+          fit: getRating(fit),
+          quality: getRating(quality),
+          shipping: getRating(shipping),
+          userId,
+          url,
+          imageUrls,
+          comment
+        })
+      );
+      // create review
+      const reviews = await ReviewsModel.bulkWrite(
+        newReviews.map(review=>({
+          updateOne: {
+            filter: { url: review.url, comment: review.comment },
+            update: { $set: review },
+            upsert: true,
+          }
+        }))
+      );
+      sendJson({
+        res,
+        data: { errors, success: true, result, reviews, clothes }
+      });
+    } catch (err) {
+      errorHandler(err, req, res);
+    }
+  },
   showUserReviews: async (req, res) => {
     try {
       const url = req.body.url;
@@ -21,7 +93,7 @@ module.exports = {
         data: {
           reviews: reviewsList
         },
-        msg: 'List of reviews'
+        msg: "List of reviews"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -36,7 +108,7 @@ module.exports = {
         data: {
           reviews: reviews
         },
-        msg: 'All reviews'
+        msg: "All reviews"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -45,14 +117,12 @@ module.exports = {
 
   removeTempReviewImage: async (req, res) => {
     try {
-      const {
-        data: { _id: imageId }
-      } = req.body;
+      const { data: { _id: imageId } } = req.body;
 
       await imageService.deleteTempImageById(imageId);
       return sendJson({
         res,
-        msg: 'Image succesfully deleted'
+        msg: "Image succesfully deleted"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -62,7 +132,7 @@ module.exports = {
   addTempReviewImage: async (req, res) => {
     try {
       const { reviewTempId } = req.body;
-      const { filename } = get(req, 'files[0]', {});
+      const { filename } = get(req, "files[0]", {});
 
       const image = await imageService.saveTempImageData({
         filename,
@@ -71,7 +141,7 @@ module.exports = {
       return sendJson({
         res,
         data: image.toObject(),
-        msg: 'Image succesfully uploaded'
+        msg: "Image succesfully uploaded"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -83,13 +153,20 @@ module.exports = {
       const userId = req.decodedToken._id;
       const { reviewTempId, url } = req.body;
 
-      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);
-      const uploaded = await reviewsService.addReview(reviewTempId, userId, url, reviewImageURLs);
+      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(
+        reviewTempId
+      );
+      const uploaded = await reviewsService.addReview(
+        reviewTempId,
+        userId,
+        url,
+        reviewImageURLs
+      );
       await clothesService.updateCloth(uploaded._id, url);
       return sendJson({
         res,
         data: uploaded,
-        msg: 'Image succesfully uploaded'
+        msg: "Image succesfully uploaded"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -103,37 +180,44 @@ module.exports = {
       const mobileCode = await MobileCodesModel.findOne({
         reviewTempId,
         url,
-        code,
-      })
+        code
+      });
 
       if (!mobileCode) {
         throw new CustomError({
-          message: 'Upload code not found',
+          message: "Upload code not found",
           code: 404
         });
       }
 
       const existingReview = await ReviewsModel.findOne({
-        reviewTempId,
-      })
+        reviewTempId
+      });
 
       if (existingReview) {
         throw new CustomError({
-          message: 'Review already exists',
+          message: "Review already exists",
           code: 400
         });
       }
 
       mobileCode.isUsed = true;
 
-      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(reviewTempId);
-      const uploaded = await reviewsService.addReview(reviewTempId, mobileCode.userId, url, reviewImageURLs);
+      const reviewImageURLs = await imageService.uploadReviewImagesToCloudinary(
+        reviewTempId
+      );
+      const uploaded = await reviewsService.addReview(
+        reviewTempId,
+        mobileCode.userId,
+        url,
+        reviewImageURLs
+      );
       await clothesService.updateCloth(uploaded._id, url);
       await mobileCode.save();
       return sendJson({
         res,
         data: uploaded,
-        msg: 'Image succesfully uploaded'
+        msg: "Image succesfully uploaded"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -150,7 +234,7 @@ module.exports = {
       return sendJson({
         res,
         data: updated,
-        msg: 'Review info updated'
+        msg: "Review info updated"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -166,7 +250,7 @@ module.exports = {
         data: {
           review: reviewImage
         },
-        msg: 'Image Url'
+        msg: "Image Url"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -180,7 +264,7 @@ module.exports = {
       return sendJson({
         res,
         data: review,
-        msg: 'All review Info'
+        msg: "All review Info"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -194,7 +278,7 @@ module.exports = {
       return sendJson({
         res,
         data: review,
-        msg: 'All review Info'
+        msg: "All review Info"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -205,12 +289,15 @@ module.exports = {
     try {
       const reviewId = req.params.id;
       const data = Object.assign({}, req.body);
-      const ratedReview = await reviewsService.rateCommentReview(reviewId, data);
+      const ratedReview = await reviewsService.rateCommentReview(
+        reviewId,
+        data
+      );
       await clothesService.updateRates(data, ratedReview.url);
       return sendJson({
         res,
         data: ratedReview,
-        msg: 'Review rated succesfully'
+        msg: "Review rated succesfully"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -219,7 +306,7 @@ module.exports = {
 
   upload: async (req, res) => {
     try {
-      return res.json('UPLOADED');
+      return res.json("UPLOADED");
     } catch (err) {
       errorHandler(err, req, res);
     }
@@ -231,11 +318,16 @@ module.exports = {
       const userId = req.decodedToken._id;
       const action = req.body.helpful;
 
-      const helpfulCount = await ratesService.updateRate(action, 'helpful', userId, reviewId);
+      const helpfulCount = await ratesService.updateRate(
+        action,
+        "helpful",
+        userId,
+        reviewId
+      );
       return sendJson({
         res,
         data: { helpfulCount },
-        msg: 'Helpful value updated!'
+        msg: "Helpful value updated!"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -248,11 +340,16 @@ module.exports = {
       const userId = req.decodedToken._id;
       const action = req.body.looksGreat;
 
-      const looksGreatCount = await ratesService.updateRate(action, 'looksGreat', userId, reviewId);
+      const looksGreatCount = await ratesService.updateRate(
+        action,
+        "looksGreat",
+        userId,
+        reviewId
+      );
       return sendJson({
         res,
         data: { looksGreatCount },
-        msg: 'Looks great value updated!'
+        msg: "Looks great value updated!"
       });
     } catch (err) {
       errorHandler(err, req, res);
@@ -266,11 +363,14 @@ module.exports = {
 
       const reviewToDelete = await reviewsService.getReviewById(reviewId);
       await clothesService.deleteReviewFromCloth(reviewId, reviewToDelete);
-      await userService.removeDeletedReviewStatsFromUserModel(userId, reviewToDelete);
+      await userService.removeDeletedReviewStatsFromUserModel(
+        userId,
+        reviewToDelete
+      );
       await reviewsService.deleteReview(reviewId, userId);
       return sendJson({
         res,
-        msg: 'Review deleted'
+        msg: "Review deleted"
       });
     } catch (err) {
       errorHandler(err, req, res);

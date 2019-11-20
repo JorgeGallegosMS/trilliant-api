@@ -45,8 +45,11 @@
     "nodemon": "^1.18.9",
     "pm2": "^3.2.9",
     "promise-limit": "^2.7.0",
+    "rxjs": "^6.5.3",
+    "rxjs-stream": "^3.1.0",
     "serve-favicon": "^2.5.0",
-    "sharp": "^0.21.3"
+    "sharp": "^0.21.3",
+    "unzipper": "^0.10.5"
   },
   "devDependencies": {
     "eslint": "^5.3.0",
