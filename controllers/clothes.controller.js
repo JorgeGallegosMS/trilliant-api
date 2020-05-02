@@ -29,7 +29,7 @@ module.exports = {
       })
     }catch(err){
       errorHandler(err, req, res)
-    } 
+    }
   },
   //TODO:
   getClothRatings: async (req, res) => {
@@ -47,11 +47,11 @@ module.exports = {
   getCloths: async (req, res) => {
     try {
       const [start, limit] = parseStartLimit(req.query.range);
-      const { sort, sortOrder, search, tags } = req.query;
+      const { sort, sortOrder, search, tags, createdByScript } = req.query;
       const findQuery = {store: { '$nin': [ null, '' ] },}
       if(search) findQuery.name = new RegExp(`.*${search}.*`, 'i')
       if(tags) findQuery.tags = { $in: tags.split(',') }
-
+      if(createdByScript === 'true') findQuery.createdUsingScript = { $eq: true }
       const clothes = await ClothModel
         .find(findQuery)
         .sort(sort ? {
