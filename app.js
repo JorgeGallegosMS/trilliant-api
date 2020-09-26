@@ -16,7 +16,7 @@ const app = express();
 
 db()
   .then(() => {
-    app.disable('x-powered-by');
+    app.disable('x-powered-by')
     app.use(
       cors({
         exposedHeaders: ['Content-Range', 'Content-Total', 'X-Total-Count']
