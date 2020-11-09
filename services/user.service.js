@@ -11,7 +11,8 @@ module.exports = {
       let fields = {
         firstName: data.firstname,
         lastName: data.lastname,
-        email: data.email
+        email: data.email,
+        about: data.about
       };
       const hash = await User.createHash(data.password);
       fields.password = hash;

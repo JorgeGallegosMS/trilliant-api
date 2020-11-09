@@ -68,6 +68,13 @@ function createUserSchema(fieldsToAdd) {
         url: String,
         userName: String
       }
+    },
+    followers: {
+      type: Number,
+      default: 0
+    },
+    about: {
+      type: String
     }
   };
 
