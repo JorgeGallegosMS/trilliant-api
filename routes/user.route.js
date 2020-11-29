@@ -38,4 +38,11 @@ router.post('/resetPsw', bodyValidationMiddleware.resetPsw(), bodyValidationMidd
 router.get('/name', userCtrl.byUsername);
 router.get('/:id', userCtrl.getOneUser);
 
+router.group(() => {
+    router.get('/me', 'UserController.me')
+    router.put('/update_profile', 'UserController.updateProfile')
+})
+    .prefix('account')
+    .middleware(['auth:jwt'])
+
 module.exports = router;
