@@ -316,7 +316,7 @@ module.exports = {
   }
 };
 
-updateProfile: async ({ request, auth, response }) {
+updateProfile: async ({ request, auth, response }) => {
     try {
         // get currently authenticated user
         const user = auth.current.user
