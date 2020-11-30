@@ -21,6 +21,33 @@ const MobileCodesModel = require('../models/mobilecodes.model');
 const welcomeHTML = fs.readFileSync(path.join(__dirname, '../templates/welcome_email.html'));
 
 module.exports = {
+  updateProfile: async ({ request, auth, response }) => {
+      try {
+          // get currently authenticated user
+          const user = auth.current.user
+
+          // update with new data entered
+          user.name = request.input('name')
+          user.username = request.input('username')
+          user.email = request.input('email')
+          user.location = request.input('location')
+          user.bio = request.input('bio')
+          user.website_url = request.input('website_url')
+
+          await user.save()
+
+          return response.json({
+              status: 'success',
+              message: 'Profile updated!',
+              data: user
+          })
+      } catch (error) {
+          return response.status(400).json({
+              status: 'error',
+              message: 'There was a problem updating profile, please try again later.'
+          })
+      }
+  },
   forgotPsw: async (req, res, next) => {
     try {
       const user = await userService.getUserByEmail(req.body.email);
