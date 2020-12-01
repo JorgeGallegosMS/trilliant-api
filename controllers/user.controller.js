@@ -15,27 +15,15 @@ const reviewsService = require('../services/reviews.service');
 const imageService = require('../services/image.service');
 const { createHash } = require('../services/password.service');
 const mailSender = require('../services/mail.service');
-
 const MobileCodesModel = require('../models/mobilecodes.model');
 
 const welcomeHTML = fs.readFileSync(path.join(__dirname, '../templates/welcome_email.html'));
 
 module.exports = {
-  updateProfile: async ({ request, auth, response }) => {
+  updateProfile: async (request, response, auth) => {
       try {
-          // get currently authenticated user
-          const user = auth.current.user
-
-          // update with new data entered
-          user.name = request.input('name')
-          user.username = request.input('username')
-          user.email = request.input('email')
-          user.location = request.input('location')
-          user.bio = request.input('bio')
-          user.website_url = request.input('website_url')
-
-          await user.save()
-
+          await userService.updateUserById(request, request.body.id)
+          console.log("After save")
           return response.json({
               status: 'success',
               message: 'Profile updated!',
@@ -349,12 +337,12 @@ updateProfile: async ({ request, auth, response }) => {
         const user = auth.current.user
 
         // update with new data entered
-        user.name = request.input('name')
-        user.username = request.input('username')
-        user.email = request.input('email')
-        user.location = request.input('location')
+        // user.name = request.input('name')
+        // user.username = request.input('username')
+        // user.email = request.input('email')
+        // user.location = request.input('location')
         user.bio = request.input('bio')
-        user.website_url = request.input('website_url')
+        // user.website_url = request.input('website_url')
 
         await user.save()
 

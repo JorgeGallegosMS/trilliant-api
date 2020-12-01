@@ -73,8 +73,9 @@ function createUserSchema(fieldsToAdd) {
       type: Number,
       default: 0
     },
-    about: {
-      type: String
+    bio: {
+      type: String,
+      default: ""
     }
   };
 
