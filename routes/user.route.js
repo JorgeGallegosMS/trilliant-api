@@ -38,4 +38,6 @@ router.post('/resetPsw', bodyValidationMiddleware.resetPsw(), bodyValidationMidd
 router.get('/name', userCtrl.byUsername);
 router.get('/:id', userCtrl.getOneUser);
 
+router.put('/update_profile', userCtrl.updateProfile)
+
 module.exports = router;

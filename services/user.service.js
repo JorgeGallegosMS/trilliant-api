@@ -12,7 +12,7 @@ module.exports = {
         firstName: data.firstname,
         lastName: data.lastname,
         email: data.email,
-        about: data.about
+        bio: data.bio
       };
       const hash = await User.createHash(data.password);
       fields.password = hash;
@@ -136,6 +136,21 @@ module.exports = {
         message: 'no user by this email',
         code: err.code,
         customCode: err.customCode
+      });
+    }
+  },
+  
+  updateUserById: async (request, id) => {
+    try {
+      const filter = { _id: id }
+      const update = { bio: request.body.bio }
+
+      await User.findOneAndUpdate(filter, update)
+      return
+    } catch (err) {
+      throw new CustomError({
+        message: err.message,
+        code: err.code
       });
     }
   },

@@ -21,7 +21,7 @@ function createUserSchema(fieldsToAdd) {
       type: String,
       validate: {
         validator: function(value) {
-          return /^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i.test(value);
+          return /^([\w.%+-]+)@([\w-]+.)+([\w]{2,})$/i.test(value);
         },
         message: props => `${props.value} is not a valid email number!`
       },
@@ -73,8 +73,9 @@ function createUserSchema(fieldsToAdd) {
       type: Number,
       default: 0
     },
-    about: {
-      type: String
+    bio: {
+      type: String,
+      default: ""
     }
   };
 

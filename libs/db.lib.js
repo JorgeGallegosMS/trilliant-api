@@ -8,5 +8,5 @@ module.exports = () => {
     process.exit(-1);
   }
 
-  return mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useCreateIndex: true });
+  return mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useCreateIndex: true, useFindAndModify: false});
 };
