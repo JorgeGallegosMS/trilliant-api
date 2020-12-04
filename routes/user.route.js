@@ -40,7 +40,7 @@ router.get('/:id', userCtrl.getOneUser);
 
 router.put('/update_profile', userCtrl.updateProfile)
 
-router.post('/image_upload', userCtrl.uploadProfilePicture)
+router.post('/upload_image', userCtrl.uploadProfilePicture)
 
 // router.group(() => {
 //     router.get('/me', 'UserController.me')
