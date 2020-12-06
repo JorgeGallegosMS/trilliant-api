@@ -332,6 +332,7 @@ module.exports = {
 
   uploadProfilePicture: async (req, res) => {
     const fileStr = req.body.data
-    console.log(fileStr)
+    const profilePicUrl = await imageService.uploadProfilePictureToCloudinary(fileStr)
+    console.log(profilePicUrl)
   }
 };
