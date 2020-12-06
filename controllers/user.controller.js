@@ -337,7 +337,7 @@ module.exports = {
       const userId = req.decodedToken._id
       const profilePicUrl = await imageService.uploadProfilePictureToCloudinary(fileStr)
       
-      UserModel.findOneAndUpdate({_id: userId}, {profilePicUrl})
+      await UserModel.findOneAndUpdate({_id: userId}, {profilePicUrl})
     } catch (error) {
       console.error(error)
     }
