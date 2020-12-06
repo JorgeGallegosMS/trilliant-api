@@ -331,8 +331,12 @@ module.exports = {
   },
 
   uploadProfilePicture: async (req, res) => {
-    const fileStr = req.body.data
-    const profilePicUrl = await imageService.uploadProfilePictureToCloudinary(fileStr)
-    console.log(profilePicUrl)
+    try {
+      const fileStr = req.body.data
+      const profilePicUrl = await imageService.uploadProfilePictureToCloudinary(fileStr)
+      console.log(profilePicUrl)
+    } catch (error) {
+      console.error(error)
+    }
   }
 };
