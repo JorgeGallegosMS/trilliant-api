@@ -16,6 +16,7 @@ const imageService = require('../services/image.service');
 const { createHash } = require('../services/password.service');
 const mailSender = require('../services/mail.service');
 const MobileCodesModel = require('../models/mobilecodes.model');
+const { UserModel } = require('../models/user.model')
 
 const welcomeHTML = fs.readFileSync(path.join(__dirname, '../templates/welcome_email.html'));
 
@@ -334,11 +335,9 @@ module.exports = {
     try {
       const fileStr = req.body.data
       const userId = req.decodedToken._id
-      const user = await userService.getUserById(userId)
       const profilePicUrl = await imageService.uploadProfilePictureToCloudinary(fileStr)
-
-      user.profilePicUrl = profilePicUrl
-      await user.save()
+      
+      UserModel.findOneAndUpdate({_id: userId}, {profilePicUrl})
     } catch (error) {
       console.error(error)
     }
