@@ -333,8 +333,12 @@ module.exports = {
   uploadProfilePicture: async (req, res) => {
     try {
       const fileStr = req.body.data
+      const userId = req.decodedToken._id
+      const user = await userService.getUserById(userId)
       const profilePicUrl = await imageService.uploadProfilePictureToCloudinary(fileStr)
-      console.log(profilePicUrl)
+
+      user.profilePicUrl = profilePicUrl
+      await user.save()
     } catch (error) {
       console.error(error)
     }

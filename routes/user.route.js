@@ -38,9 +38,9 @@ router.post('/resetPsw', bodyValidationMiddleware.resetPsw(), bodyValidationMidd
 router.get('/name', userCtrl.byUsername);
 router.get('/:id', userCtrl.getOneUser);
 
-router.put('/update_profile', userCtrl.updateProfile)
+router.put('/update_profile', localTokenMiddleware, userCtrl.updateProfile)
 
-router.post('/upload_image', userCtrl.uploadProfilePicture)
+router.post('/upload_image', localTokenMiddleware, userCtrl.uploadProfilePicture)
 
 // router.group(() => {
 //     router.get('/me', 'UserController.me')
