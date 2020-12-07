@@ -23,8 +23,9 @@ const welcomeHTML = fs.readFileSync(path.join(__dirname, '../templates/welcome_e
 module.exports = {
   updateProfile: async (request, response) => {
       try {
-          const userId = req.decodedToken._id
-          await userService.updateUserById(request, userId)
+          const userId = await request.decodedToken._id
+          const bio = await request.body.bio
+          await UserModel.findOneAndUpdate({_id: userId}, {bio})
           console.log("After save")
           return response.json({
               status: 'success',
