@@ -40,4 +40,11 @@ router.get('/:id', userCtrl.getOneUser);
 
 router.put('/update_profile', userCtrl.updateProfile)
 
+// router.group(() => {
+//     router.get('/me', 'UserController.me')
+//     router.put('/update_profile', 'UserController.updateProfile')
+// })
+//     .prefix('account')
+//     .middleware(['auth:jwt'])
+
 module.exports = router;
