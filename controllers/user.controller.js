@@ -334,11 +334,10 @@ module.exports = {
 
   uploadProfilePicture: async (req, res) => {
     try {
-      const fileStr = req.body.data
-      const userId = req.decodedToken._id
+      const fileStr = await req.body.data
+      const userId = await req.decodedToken._id
       const profilePicUrl = await imageService.uploadProfilePictureToCloudinary(fileStr)
-      
-      UserModel.findOneAndUpdate({_id: userId}, {profilePicUrl})
+      await UserModel.findOneAndUpdate({_id: userId}, {profilePicUrl})
     } catch (error) {
       console.error(error)
     }
