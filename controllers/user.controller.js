@@ -16,13 +16,15 @@ const imageService = require('../services/image.service');
 const { createHash } = require('../services/password.service');
 const mailSender = require('../services/mail.service');
 const MobileCodesModel = require('../models/mobilecodes.model');
+const { UserModel } = require('../models/user.model')
 
 const welcomeHTML = fs.readFileSync(path.join(__dirname, '../templates/welcome_email.html'));
 
 module.exports = {
-  updateProfile: async (request, response, auth) => {
+  updateProfile: async (request, response) => {
       try {
-          await userService.updateUserById(request, request.body.id)
+          const userId = req.decodedToken._id
+          await userService.updateUserById(request, userId)
           console.log("After save")
           return response.json({
               status: 'success',
@@ -328,33 +330,17 @@ module.exports = {
     } catch (err) {
       errorHandler(err, req, res);
     }
+  },
+
+  uploadProfilePicture: async (req, res) => {
+    try {
+      const fileStr = req.body.data
+      const userId = req.decodedToken._id
+      const profilePicUrl = await imageService.uploadProfilePictureToCloudinary(fileStr)
+      
+      UserModel.findOneAndUpdate({_id: userId}, {profilePicUrl})
+    } catch (error) {
+      console.error(error)
+    }
   }
 };
-
-updateProfile: async ({ request, auth, response }) => {
-    try {
-        // get currently authenticated user
-        const user = auth.current.user
-
-        // update with new data entered
-        // user.name = request.input('name')
-        // user.username = request.input('username')
-        // user.email = request.input('email')
-        // user.location = request.input('location')
-        user.bio = request.input('bio')
-        // user.website_url = request.input('website_url')
-
-        await user.save()
-
-        return response.json({
-            status: 'success',
-            message: 'Profile updated!',
-            data: user
-        })
-    } catch (error) {
-        return response.status(400).json({
-            status: 'error',
-            message: 'There was a problem updating profile, please try again later.'
-        })
-    }
-}

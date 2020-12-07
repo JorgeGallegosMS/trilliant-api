@@ -76,6 +76,10 @@ function createUserSchema(fieldsToAdd) {
     bio: {
       type: String,
       default: ""
+    },
+    profilePicUrl: {
+      type: String,
+      default: ""
     }
   };
 

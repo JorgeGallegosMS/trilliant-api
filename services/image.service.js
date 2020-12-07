@@ -145,3 +145,15 @@ module.exports.clearOldImageData = async reviewTempId => {
     });
   }
 };
+
+module.exports.uploadProfilePictureToCloudinary = async file => {
+  try {
+    const uploadedImage = await cloudinary.v2.uploader.upload(file, {
+      folder: 'users',
+      public_id: 'profile_pic'
+    })
+    return uploadedImage.secure_url
+  } catch (error) {
+    console.error(error)
+  }
+}
