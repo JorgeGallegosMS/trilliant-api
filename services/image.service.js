@@ -146,11 +146,11 @@ module.exports.clearOldImageData = async reviewTempId => {
   }
 };
 
-module.exports.uploadProfilePictureToCloudinary = async file => {
+module.exports.uploadProfilePictureToCloudinary = async (file, userId) => {
   try {
     const uploadedImage = await cloudinary.v2.uploader.upload(file, {
       folder: 'users',
-      public_id: 'profile_pic'
+      public_id: `${userId}_profile_pic`
     })
     return uploadedImage.secure_url
   } catch (error) {
